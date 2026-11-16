@@ -25,11 +25,20 @@
       visible[entry.target.id] = entry.isIntersecting;
       if (entry.isIntersecting) entry.target.classList.add("arrived");
     });
+    refresh();
+  }, { rootMargin: "-25% 0px -60% 0px" });
+
+  function atEnd() {
+    return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+  }
+
+  function refresh() {
+    if (atEnd()) { setCurrent(targets[targets.length - 1].id); return; }
     var hits = targets.filter(function (t) { return visible[t.id]; });
     var current = hits[hits.length - 1];
     if (current) setCurrent(current.id);
     else links.forEach(function (a) { a.removeAttribute("aria-current"); });
-  }, { rootMargin: "-25% 0px -60% 0px" });
+  }
 
   targets.forEach(function (t) { observer.observe(t); });
 
@@ -43,9 +52,8 @@
   window.addEventListener("resize", edge);
   edge();
 
-  // The footer is too short to reach the reading line, so mark it at the page end.
+  // The footer is too short to reach the reading line, so it is marked at the page end.
   window.addEventListener("scroll", function () {
-    var atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-    if (atEnd) setCurrent(targets[targets.length - 1].id);
+    if (atEnd() || links[links.length - 1].hasAttribute("aria-current")) refresh();
   }, { passive: true });
 })();

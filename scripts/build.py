@@ -142,11 +142,10 @@ def place_labels(ranked, points, limit=7):
             return True
         if any(x0 < bx1 and bx0 < x1 and y0 < by1 and by0 < y1 for bx0, by0, bx1, by1 in boxes):
             return True
-        # Avoid dots of towns ranked at or above this one; lower-ranked dots may sit under a label.
-        rank = ranked.index(own)
         return any(
-            x0 - 3 < points[t][0] < x1 + 3 and y0 - 3 < points[t][1] < y1 + 3
-            for t in ranked[:rank]
+            x0 - 2 < dx < x1 + 2 and y0 - 2 < dy < y1 + 2
+            for town, (dx, dy) in points.items()
+            if town != own
         )
 
     placed = []
@@ -231,8 +230,10 @@ def row_html(r, show_lang):
     note_html = f'<span class="note">{e(note)}</span>' if note else ""
     lang = f' <span class="lang" data-l="{r["lang"]}">{LANGS[r["lang"]]}</span>' if show_lang and r["lang"] else ""
     mark = UNSURE if r["unsure"] else ""
-    head, _, last = r["title"].rpartition(" ")
-    title_html = (e(head + " ") if head else "") + f'<span class="keep">{e(last)}{lang}</span>' if lang else e(r["title"])
+    words = r["title"].split(" ")
+    tail = 2 if len(words) > 2 and re.fullmatch(r"[\d,]+", words[-1]) else 1
+    head, last = " ".join(words[:-tail]), "\u00a0".join(words[-tail:])
+    title_html = (e(head + " ") if head else "") + f'<span class="keep">{e(last)}{lang}</span>'
     return (
         f'<tr class="{r["kind"]}">'
         f'<td class="dates">{e(r["dates"])}{mark}</td>'
@@ -322,7 +323,7 @@ def page(years, sections, grand):
 <title>Osho: the talks, {span}</title>
 <meta name="description" content="A chronology of Osho's talks from {span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.">
 <meta property="og:title" content="Osho: the talks, {span}">
-<meta property="og:description" content="Every known talk in date order: the series, the place and the number of talks.">
+<meta property="og:description" content="Every talk listed on the Sannyas Wiki, in date order: the series, the place and the number of talks.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#1F3A6B">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F3A6B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23E9A21A'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23C2281D'/%3E%3C/svg%3E">
@@ -333,7 +334,7 @@ def page(years, sections, grand):
 <a class="skip" href="#main">Skip to the chronology</a>
 <header class="mast">
   <h1>Osho: the talks<br><span>{span}</span></h1>
-  <p>Every known talk in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
+  <p>Every talk listed on the Sannyas Wiki, in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
 </header>
 <nav class="years" aria-label="Years">{nav}<a href="#sources">Sources</a></nav>
 <main id="main">
