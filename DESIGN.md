@@ -259,6 +259,12 @@ Colour photograph, `object-fit: cover`, in the arch with a 6px indigo border and
 - **Camp row:** leaf green with white text, 8px rounded ends, separated from its neighbours by a 3px cotton line instead of the dotted rule. No hover tint.
 - **Language pill:** after the title where a year mixes languages. Turmeric with ink text for English, madder with white text for Hindi.
 - **Uncertain mark:** a small dashed ring in the current text colour after a date, place or count the source marks as uncertain.
+- **Outside links:** one quiet line under the title: `Listen`, `Video`, `Wiki`, then any hand-added links, always in that order. Indigo 600 text at 0.86rem with a small icon, no fill or border; madder with underline on hover. White in camp rows. Each link's accessible name includes the series.
+- **Series length:** under the count, soft ink at 0.78rem: `of 44 · 71 h`, shown only when the wiki's whole series is longer than the row.
+- **Month divider:** in years of more than 20 rows, a madder display-face month name on a dotted madder rule.
+- **Repeated place:** when a row's place matches the row above, the cell shows a soft ditto mark; the full place stays in the markup for screen readers.
+- **Key:** a one-line reminder of the marks under every year's table.
+- **Phone:** the place moves under the title, before the links.
 
 ### Links and focus
 Links keep the text colour with a madder underline and turn madder on hover. Focus is a 3px madder outline offset 3px.

@@ -43,6 +43,8 @@ Then run `make serve` and look at the series on the page.
 2. Reads that page's table of contents: how many talks, how long, and whether the wiki says video or audio exists.
 3. Looks for a matching series page in OshoWorld's public sitemap, by title, and fetches it once to confirm it exists.
 
-A "Search YouTube" button appears only where the wiki says video exists. It is a search, not a specific video.
+A "Video" link appears only where the wiki says video exists. It opens a YouTube search, not a specific video.
+
+On the page the links sit in one line under the series title, in a fixed order: Listen, Video, Wiki, then hand-added links.
 
 Series that OshoWorld spells differently get no listen link. Add one by hand in `data/links.csv`.
