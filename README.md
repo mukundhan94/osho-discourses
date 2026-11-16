@@ -4,7 +4,7 @@ A chronology of Osho's talks in date order: the series, the dates, the place and
 
 **Site:** https://mukundhan94.github.io/osho-discourses/
 
-Coverage so far: 1954 to 1967. Later years (Bombay, Poona, Rajneeshpuram, the world tour, Poona again, up to the last discourse on 10 April 1989) are still to be added.
+Coverage: see the site. Each year has one file in `data/talks/`.
 
 ## What the data is, and is not
 
@@ -20,7 +20,8 @@ Coverage so far: 1954 to 1967. Later years (Bombay, Poona, Rajneeshpuram, the wo
 data/talks/<year>.csv   one file per year section, one row per series or group of talks
 data/years.json         heading, summary and photograph for each section, in page order
 data/places.csv         town, latitude, longitude
-data/india-outline.json simplified outline used by the maps
+data/india-outline.json simplified India outline for the maps
+data/world-outline.json simplified world land outline for years abroad
 assets/                 stylesheet, script, fonts and photographs
 scripts/build.py        builds the site into _site/ (Python 3, standard library only)
 PRODUCT.md              who the page is for and what it must do
@@ -50,19 +51,21 @@ python3 -m http.server 8431 --directory _site
 | `place` | Place as shown on the page. |
 | `towns` | Towns for the map, separated by `;`. Each must exist in `data/places.csv`. |
 | `talks` | A number, `at least N`, `about N` or `unknown`. |
-| `kind` | `series`, `camp` or `untitled`. |
+| `kind` | `series`, `camp` (meditation camp), `untitled`, `darshan` (darshan diary) or `interview` (press interviews). |
 | `unsure` | `y` when the source marks the date, place or count as uncertain. |
 | `note` | Optional short note shown under the title. |
+| `lang` | `hi`, `en`, or empty when mixed or not stated. |
 
-The build fails on an unknown `kind`, an unknown town, or a town outside the map window.
+The build fails on a wrong header, an unknown `kind` or `lang`, or a town missing from `data/places.csv`.
+
+A year whose towns all lie in central and northern India gets an India map. Any other year gets a world map fitted to its places.
 
 ## Adding a year
 
 1. Add `data/talks/<year>.csv` with the header above.
 2. Add any new towns to `data/places.csv`.
-3. Add an entry to `data/years.json`. A photograph goes in `assets/img/` with its credit in `assets/img/CREDITS.md`.
-4. Add the wiki page to `SOURCES` in `scripts/build.py`.
-5. Run the build and check the page.
+3. Add an entry to `data/years.json` with `id`, `heading` and `lede`. A `photo` is optional: the file goes in `assets/img/` with its credit in `assets/img/CREDITS.md`.
+4. Run the build and check the page. The link to the year's wiki page is derived from the `id`.
 
 ## Sources
 

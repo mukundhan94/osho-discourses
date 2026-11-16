@@ -1,33 +1,33 @@
-sort,dates,title,place,towns,talks,kind,unsure,note
-1965-00,1965,Talk at an All Religions Meet,Faridabad,Faridabad,1,untitled,y,No day given
-1965-01-01,1 Jan,Bombay talk,Bombay,Bombay,1,untitled,,
-1965-01-20,20 to 23 Jan,Bombay talks,Bombay,Bombay,unknown,untitled,,In the Gyan Satra format
-1965-01-24,24 Jan,"Surya Ki Or Udan, 1",Poona,Poona,1,series,y,
-1965-02,Feb,Talk at an All-Saints Assembly,Delhi,Delhi,1,untitled,y,Day not given
-1965-02-02,2 to 9 Feb,Camp talks,Ajol,Ajol,unknown,camp,y,
-1965-02-11,11 Feb to 13 Apr,Poona talks,"Poona, Chinchwad",Poona,3,untitled,,
-1965-02-12,12 to 15 Feb,Dhyan-Sutra,Mahabaleshwar,Mahabaleshwar,9,camp,y,A tenth talk on 15 Feb is marked as possibly not recorded
-1965-02-26,26 to 28 Feb,Talks in New Delhi,New Delhi,Delhi,unknown,untitled,,
-1965-03-12,12 to 13 Mar,Talks in Tikamgarh,Tikamgarh,Tikamgarh,2,untitled,,
-1965-04-13,13 to 14 Apr,"Mahaveer Ya Mahavinash, 1, 2 and 5","Chembur, Sion and Chowpatty, Bombay",Bombay,3,series,y,One time of day marked uncertain
-1965-04-15,15 Apr to 25 Jul,"Dharm Aur Anand, 2, 7 and 8","Ghatkopar, Surendranagar, Wadhwan",Bombay;Surendranagar,3,series,,
-1965-05-06,6 to 10 May,Meditation Camp Udaipur,Udaipur,Udaipur,9,camp,y,9 May marked uncertain
-1965-06-07,7 to 14 Jun,Satsangs in Jabalpur,Jabalpur,Jabalpur,unknown,untitled,,Organised by Seth Govind Das
-1965-06-18,18 to 19 Jun,Amrit Ki Disha,"Bombay, four venues",Bombay,4,series,,
-1965-06-19a,19 to 20 Jun,"Amrit Varsha, 3 and 4",Bombay,Bombay,2,series,,
-1965-06-19b,19 Jun,"Kya Sove Tu Bavri, 3",Bombay,Bombay,1,series,,
-1965-06-20,20 Jun,A talk from Dharm Sadhana Ke Sutra,Bombay,Bombay,1,series,y,
-1965-07-11,11 Jul,Talk in Kareli,Kareli,Kareli,1,untitled,,
-1965-07-24a,24 Jul,"Dharm Ki Khoj, 1",Bhavnagar,Bhavnagar,1,series,,
-1965-07-24b,24 to 27 Jul,Saurashtra tour,"Limbdi, Junagadh, Rajkot, Jamnagar",Limbdi;Junagadh;Rajkot;Jamnagar,7,untitled,y,One Junagadh talk marked uncertain
-1965-08-24,24 to 25 Aug,Talks in Kolkata,Kolkata,Kolkata,at least 2,untitled,,
-1965-08-28,28 Aug,Talk in Ahmedabad,Ahmedabad,Ahmedabad,1,untitled,,
-1965-08-29,29 to 30 Aug,Bombay talks,Bombay,Bombay,at least 2,untitled,,
-1965-09-12,12 Sep,Talk in Indore,Indore,Indore,1,untitled,,
-1965-10-08a,8 to 10 Oct,Satsangs in Poona,Poona,Poona,unknown,untitled,,
-1965-10-08b,8 Oct,"Ek Ek Kadam, 7",Poona,Poona,1,series,,
-1965-10-09,9 Oct,"Prem Ke Pankh, 1",Poona,Poona,1,series,,
-1965-11-14,14 to 15 Nov,"Satya Ki Pyas, 1 to 3",Bombay,Bombay,3,series,,
-1965-12-01,1 Dec,Taaran Taran birth anniversary talk,Jabalpur,Jabalpur,1,untitled,,
-1965-12-13,13 to 15 Dec,Samadhi Ke Teen Charan,Ahmednagar,Ahmednagar,4,series,,
-1965-12-28,28 to 31 Dec,Jeevan Ki Khoj,Bombay,Bombay,4,series,,
+sort,dates,title,place,towns,talks,kind,unsure,note,lang
+1965-00,1965,Talk at an All Religions Meet,Faridabad,Faridabad,1,untitled,y,No day given,hi
+1965-01-01,1 Jan,Bombay talk,Bombay,Bombay,1,untitled,,,hi
+1965-01-20,20 to 23 Jan,Bombay talks,Bombay,Bombay,unknown,untitled,,In the Gyan Satra format,hi
+1965-01-24,24 Jan,"Surya Ki Or Udan, 1",Poona,Poona,1,series,y,,hi
+1965-02,Feb,Talk at an All-Saints Assembly,Delhi,Delhi,1,untitled,y,Day not given,hi
+1965-02-02,2 to 9 Feb,Camp talks,Ajol,Ajol,unknown,camp,y,,hi
+1965-02-11,11 Feb to 13 Apr,Poona talks,"Poona, Chinchwad",Poona,3,untitled,,,hi
+1965-02-12,12 to 15 Feb,Dhyan-Sutra,Mahabaleshwar,Mahabaleshwar,9,camp,y,A tenth talk on 15 Feb is marked as possibly not recorded,hi
+1965-02-26,26 to 28 Feb,Talks in New Delhi,New Delhi,Delhi,unknown,untitled,,,hi
+1965-03-12,12 to 13 Mar,Talks in Tikamgarh,Tikamgarh,Tikamgarh,2,untitled,,,hi
+1965-04-13,13 to 14 Apr,"Mahaveer Ya Mahavinash, 1, 2 and 5","Chembur, Sion and Chowpatty, Bombay",Bombay,3,series,y,One time of day marked uncertain,hi
+1965-04-15,15 Apr to 25 Jul,"Dharm Aur Anand, 2, 7 and 8","Ghatkopar, Surendranagar, Wadhwan",Bombay;Surendranagar,3,series,,,hi
+1965-05-06,6 to 10 May,Meditation Camp Udaipur,Udaipur,Udaipur,9,camp,y,9 May marked uncertain,hi
+1965-06-07,7 to 14 Jun,Satsangs in Jabalpur,Jabalpur,Jabalpur,unknown,untitled,,Organised by Seth Govind Das,hi
+1965-06-18,18 to 19 Jun,Amrit Ki Disha,"Bombay, four venues",Bombay,4,series,,,hi
+1965-06-19a,19 to 20 Jun,"Amrit Varsha, 3 and 4",Bombay,Bombay,2,series,,,hi
+1965-06-19b,19 Jun,"Kya Sove Tu Bavri, 3",Bombay,Bombay,1,series,,,hi
+1965-06-20,20 Jun,A talk from Dharm Sadhana Ke Sutra,Bombay,Bombay,1,series,y,,hi
+1965-07-11,11 Jul,Talk in Kareli,Kareli,Kareli,1,untitled,,,hi
+1965-07-24a,24 Jul,"Dharm Ki Khoj, 1",Bhavnagar,Bhavnagar,1,series,,,hi
+1965-07-24b,24 to 27 Jul,Saurashtra tour,"Limbdi, Junagadh, Rajkot, Jamnagar",Limbdi;Junagadh;Rajkot;Jamnagar,7,untitled,y,One Junagadh talk marked uncertain,hi
+1965-08-24,24 to 25 Aug,Talks in Kolkata,Kolkata,Kolkata,at least 2,untitled,,,hi
+1965-08-28,28 Aug,Talk in Ahmedabad,Ahmedabad,Ahmedabad,1,untitled,,,hi
+1965-08-29,29 to 30 Aug,Bombay talks,Bombay,Bombay,at least 2,untitled,,,hi
+1965-09-12,12 Sep,Talk in Indore,Indore,Indore,1,untitled,,,hi
+1965-10-08a,8 to 10 Oct,Satsangs in Poona,Poona,Poona,unknown,untitled,,,hi
+1965-10-08b,8 Oct,"Ek Ek Kadam, 7",Poona,Poona,1,series,,,hi
+1965-10-09,9 Oct,"Prem Ke Pankh, 1",Poona,Poona,1,series,,,hi
+1965-11-14,14 to 15 Nov,"Satya Ki Pyas, 1 to 3",Bombay,Bombay,3,series,,,hi
+1965-12-01,1 Dec,Taaran Taran birth anniversary talk,Jabalpur,Jabalpur,1,untitled,,,hi
+1965-12-13,13 to 15 Dec,Samadhi Ke Teen Charan,Ahmednagar,Ahmednagar,4,series,,,hi
+1965-12-28,28 to 31 Dec,Jeevan Ki Khoj,Bombay,Bombay,4,series,,,hi

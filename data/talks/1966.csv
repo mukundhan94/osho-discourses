@@ -1,34 +1,34 @@
-sort,dates,title,place,towns,talks,kind,unsure,note
-1966-01-00,Jan to May,"Shanti Ki Khoj, 14",Jabalpur,Jabalpur,1,series,y,Dated to a range only
-1966-01-01,1 Jan,Talks in Firozabad,Firozabad,Firozabad,at least 2,untitled,,
-1966-01-26,26 Jan,Talk in Jalgaon,Jalgaon,Jalgaon,1,untitled,y,
-1966-02-04,4 to 6 Feb,Sakshi Ka Bodh,Tulsishyam,Tulsishyam,4,camp,y,Three further talks are listed as missing
-1966-03-19,19 Mar to 29 Dec,"Sukh Aur Shanti, 1 to 5","Patan, Ahmedabad, Poona, Paratwada",Patan;Ahmedabad;Poona;Paratwada,5,series,,
-1966-04-01,1 to 4 Apr,Talks in Nashik and Poona,"Nashik, Poona",Nashik;Poona,3,untitled,,Two in Poona on the eve of Mahavir Jayanti
-1966-04-09,9 Apr,"Kya Sove Tu Bavri, 5","Ghatkopar, Bombay",Bombay,1,series,,
-1966-04-14,14 Apr to 20 Sep,Swayam Ki Satta,Bombay,Bombay,7,series,y,Two more unnumbered talks. Two dates marked uncertain
-1966-04-16,16 Apr and 16 Sep,"Dharm Ki Yatra, 4 and 9","Ghatkopar; Fergusson College, Poona",Bombay;Poona,2,series,,
-1966-05-14,14 to 17 May,Meditation camp,Udaipur,Udaipur,unknown,camp,,No talks listed
-1966-06-10,10 Jun to 15 Sep,Aankhon Dekhi Sanch,"M.E.S. College and Fergusson College, Poona",Poona,6,series,y,One more unnumbered talk
-1966-06-18,18 Jun,Talks in Kareli,Kareli,Kareli,2,untitled,,
-1966-06-19,19 Jun,Talk in Ganj Basoda,Ganj Basoda,Ganj Basoda,1,untitled,,
-1966-06-20,20 to 21 Jun,Talks in Gwalior,Gwalior,Gwalior,2,untitled,,
-1966-06-27,27 to 29 Jun,Camp talks,"Samanway Ashram, Bodh Gaya",Bodh Gaya,6,camp,,Three more unnamed morning talks
-1966-07-12,12 Jul,Talk to the Sindhi Tarun Samaj,Jabalpur,Jabalpur,1,untitled,,
-1966-07-30,30 Jul to 1 Aug,Talks in Chanda,Chandrapur,Chandrapur,3,untitled,,
-1966-08-01,1 Aug,Talk in Gondia,Gondia,Gondia,1,untitled,,
-1966-09-15,15 to 16 Sep,Talks at Hind Vijay Theatre,Poona,Poona,2,untitled,,
-1966-09-17,17 Sep,Talk in Vile Parle,Bombay,Bombay,1,untitled,,
-1966-09-22,22 to 29 Sep,"Talks in Jabalpur, Panagar and Pindrai","Jabalpur, Panagar, Pindrai",Jabalpur,about 6,untitled,,
-1966-10-01,1 to 3 Oct,"Talks in Bhilai, Durg and Raipur","Bhilai, Durg, Raipur",Bhilai;Raipur,at least 6,untitled,y,A Gondia talk on 3 Oct is marked uncertain
-1966-10-12,12 to 15 Oct,Talks in Aurangabad,Aurangabad,Aurangabad,about 4,untitled,,
-1966-10-15,15 Oct,"Prem Hai Dwar Prabhu Ka, 2","Ellora Gurukul, Aurangabad",Aurangabad,1,series,,
-1966-10-22,22 to 25 Oct,Girah Hamara Sunn Mein,Matheran,Matheran,9,camp,,
-1966-10-27,27 to 29 Oct,Jeevan Geet,"Bhonsale Military School, Nashik",Nashik,5,camp,,
-1966-11-00,Nov,"Nari Aur Kranti, 2","Ghatkopar, Bombay",Bombay,1,series,y,Day not given
-1966-11-11,11 Nov,Talk at a Jain temple,Jabalpur,Jabalpur,1,untitled,,
-1966-11-23,23 Nov,"Dharm Aur Anand, 9","Rashtriya Vidya Shala, Bombay",Bombay,1,series,,
-1966-12-04,4 Dec,"Aath Pahar Youn Jhumte, 2","Lions Club, Poona",Poona,1,series,,
-1966-12-05,5 to 8 Dec,Talks in Poona and Ahmednagar,"Poona, Ahmednagar",Poona;Ahmednagar,5,untitled,,
-1966-12-17,17 to 21 Dec,"Talks in Chhindwara, Chaurai, Jabalpur and Mandla","Chhindwara, Chaurai, Jabalpur, Mandla",Chhindwara;Jabalpur;Mandla,5,untitled,y,Another source dates the Jabalpur talk to 18 Dec
-1966-12-25,25 to 28 Dec,"Sakshi Ki Sadhana, 3 to 8",Chikhaldara,Chikhaldara,6,camp,,Talks 1 and 2 are not in the wiki table
+sort,dates,title,place,towns,talks,kind,unsure,note,lang
+1966-01-00,Jan to May,"Shanti Ki Khoj, 14",Jabalpur,Jabalpur,1,series,y,Dated to a range only,hi
+1966-01-01,1 Jan,Talks in Firozabad,Firozabad,Firozabad,at least 2,untitled,,,hi
+1966-01-26,26 Jan,Talk in Jalgaon,Jalgaon,Jalgaon,1,untitled,y,,hi
+1966-02-04,4 to 6 Feb,Sakshi Ka Bodh,Tulsishyam,Tulsishyam,4,camp,y,Three further talks are listed as missing,hi
+1966-03-19,19 Mar to 29 Dec,"Sukh Aur Shanti, 1 to 5","Patan, Ahmedabad, Poona, Paratwada",Patan;Ahmedabad;Poona;Paratwada,5,series,,,hi
+1966-04-01,1 to 4 Apr,Talks in Nashik and Poona,"Nashik, Poona",Nashik;Poona,3,untitled,,Two in Poona on the eve of Mahavir Jayanti,hi
+1966-04-09,9 Apr,"Kya Sove Tu Bavri, 5","Ghatkopar, Bombay",Bombay,1,series,,,hi
+1966-04-14,14 Apr to 20 Sep,Swayam Ki Satta,Bombay,Bombay,7,series,y,Two more unnumbered talks. Two dates marked uncertain,hi
+1966-04-16,16 Apr and 16 Sep,"Dharm Ki Yatra, 4 and 9","Ghatkopar; Fergusson College, Poona",Bombay;Poona,2,series,,,hi
+1966-05-14,14 to 17 May,Meditation camp,Udaipur,Udaipur,unknown,camp,,No talks listed,hi
+1966-06-10,10 Jun to 15 Sep,Aankhon Dekhi Sanch,"M.E.S. College and Fergusson College, Poona",Poona,6,series,y,One more unnumbered talk,hi
+1966-06-18,18 Jun,Talks in Kareli,Kareli,Kareli,2,untitled,,,hi
+1966-06-19,19 Jun,Talk in Ganj Basoda,Ganj Basoda,Ganj Basoda,1,untitled,,,hi
+1966-06-20,20 to 21 Jun,Talks in Gwalior,Gwalior,Gwalior,2,untitled,,,hi
+1966-06-27,27 to 29 Jun,Camp talks,"Samanway Ashram, Bodh Gaya",Bodh Gaya,6,camp,,Three more unnamed morning talks,hi
+1966-07-12,12 Jul,Talk to the Sindhi Tarun Samaj,Jabalpur,Jabalpur,1,untitled,,,hi
+1966-07-30,30 Jul to 1 Aug,Talks in Chanda,Chandrapur,Chandrapur,3,untitled,,,hi
+1966-08-01,1 Aug,Talk in Gondia,Gondia,Gondia,1,untitled,,,hi
+1966-09-15,15 to 16 Sep,Talks at Hind Vijay Theatre,Poona,Poona,2,untitled,,,hi
+1966-09-17,17 Sep,Talk in Vile Parle,Bombay,Bombay,1,untitled,,,hi
+1966-09-22,22 to 29 Sep,"Talks in Jabalpur, Panagar and Pindrai","Jabalpur, Panagar, Pindrai",Jabalpur,about 6,untitled,,,hi
+1966-10-01,1 to 3 Oct,"Talks in Bhilai, Durg and Raipur","Bhilai, Durg, Raipur",Bhilai;Raipur,at least 6,untitled,y,A Gondia talk on 3 Oct is marked uncertain,hi
+1966-10-12,12 to 15 Oct,Talks in Aurangabad,Aurangabad,Aurangabad,about 4,untitled,,,hi
+1966-10-15,15 Oct,"Prem Hai Dwar Prabhu Ka, 2","Ellora Gurukul, Aurangabad",Aurangabad,1,series,,,hi
+1966-10-22,22 to 25 Oct,Girah Hamara Sunn Mein,Matheran,Matheran,9,camp,,,hi
+1966-10-27,27 to 29 Oct,Jeevan Geet,"Bhonsale Military School, Nashik",Nashik,5,camp,,,hi
+1966-11-00,Nov,"Nari Aur Kranti, 2","Ghatkopar, Bombay",Bombay,1,series,y,Day not given,hi
+1966-11-11,11 Nov,Talk at a Jain temple,Jabalpur,Jabalpur,1,untitled,,,hi
+1966-11-23,23 Nov,"Dharm Aur Anand, 9","Rashtriya Vidya Shala, Bombay",Bombay,1,series,,,hi
+1966-12-04,4 Dec,"Aath Pahar Youn Jhumte, 2","Lions Club, Poona",Poona,1,series,,,hi
+1966-12-05,5 to 8 Dec,Talks in Poona and Ahmednagar,"Poona, Ahmednagar",Poona;Ahmednagar,5,untitled,,,hi
+1966-12-17,17 to 21 Dec,"Talks in Chhindwara, Chaurai, Jabalpur and Mandla","Chhindwara, Chaurai, Jabalpur, Mandla",Chhindwara;Jabalpur;Mandla,5,untitled,y,Another source dates the Jabalpur talk to 18 Dec,hi
+1966-12-25,25 to 28 Dec,"Sakshi Ki Sadhana, 3 to 8",Chikhaldara,Chikhaldara,6,camp,,Talks 1 and 2 are not in the wiki table,hi

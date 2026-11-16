@@ -1,32 +1,77 @@
 [
   {
-    "id": "before-1964", "nav": "Before 1964", "numeral": "1954", "numeral_sub": "to 1963",
+    "id": "before-1964",
+    "nav": "Before 64",
+    "numeral": "1954",
+    "numeral_sub": "to 1963",
     "heading": "Before the tapes",
     "lede": "Isolated talks at Jain and all-religions gatherings from 1954, centred on Jabalpur. By 1962 he is touring central India and holding his first meditation camps. Most of these talks have no title, and the rows below name them by town.",
-    "photo": {"file": "jabalpur.webp", "alt": "White marble cliffs rising from the Narmada river", "caption": "The Marble Rocks on the Narmada near Jabalpur, his base throughout these years.", "author": "Anshikasjv12", "licence": "CC BY-SA 4.0", "licence_url": "https://creativecommons.org/licenses/by-sa/4.0", "source_url": "https://commons.wikimedia.org/wiki/File:Marble_Rocks_-_Jabalpur.jpg"}
+    "photo": {
+      "file": "jabalpur.webp",
+      "alt": "White marble cliffs rising from the Narmada river",
+      "caption": "The Marble Rocks on the Narmada near Jabalpur, his base throughout these years.",
+      "author": "Anshikasjv12",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Marble_Rocks_-_Jabalpur.jpg"
+    },
+    "label": "1954 to 1963",
+    "source": "https://www.sannyas.wiki/index.php?title=Osho_Timeline_before_1964"
   },
   {
-    "id": "1964", "nav": "1964", "numeral": "1964",
+    "id": "1964",
     "heading": "The first camp at Ranakpur",
     "lede": "The year opens with private talks in Bombay in April. In June he holds his first meditation camp, at Muchala Mahavira near Ranakpur, later published as Sadhana Path. Sources place the first tape recording at this camp, though the wiki lists no surviving media for its talks.",
-    "photo": {"file": "ranakpur.webp", "alt": "A wide marble temple with many spires above a flight of steps", "caption": "The Jain temple at Ranakpur. The camp was held nearby, at Muchala Mahavira.", "author": "Ingo Mehling", "licence": "CC BY-SA 3.0", "licence_url": "https://creativecommons.org/licenses/by-sa/3.0", "source_url": "https://commons.wikimedia.org/wiki/File:Jain_Temple_Ranakpur.jpg"}
+    "photo": {
+      "file": "ranakpur.webp",
+      "alt": "A wide marble temple with many spires above a flight of steps",
+      "caption": "The Jain temple at Ranakpur. The camp was held nearby, at Muchala Mahavira.",
+      "author": "Ingo Mehling",
+      "licence": "CC BY-SA 3.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/3.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Jain_Temple_Ranakpur.jpg"
+    }
   },
   {
-    "id": "1965", "nav": "1965", "numeral": "1965",
+    "id": "1965",
     "heading": "Mahabaleshwar, Udaipur and Saurashtra",
     "lede": "A camp at Mahabaleshwar in February gives Dhyan-Sutra, and a second camp follows at Udaipur in May. July is a tour of Saurashtra. The year closes with Jeevan Ki Khoj in Bombay.",
-    "photo": {"file": "mahabaleshwar.webp", "alt": "A forested valley under low cloud", "caption": "A valley at Mahabaleshwar, where the Dhyan-Sutra camp was held in February.", "author": "Shiivamsharma", "licence": "CC BY-SA 4.0", "licence_url": "https://creativecommons.org/licenses/by-sa/4.0", "source_url": "https://commons.wikimedia.org/wiki/File:Waterfall_Valley_Mahabaleshwar.jpg"}
+    "photo": {
+      "file": "mahabaleshwar.webp",
+      "alt": "A forested valley under low cloud",
+      "caption": "A valley at Mahabaleshwar, where the Dhyan-Sutra camp was held in February.",
+      "author": "Shiivamsharma",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Waterfall_Valley_Mahabaleshwar.jpg"
+    }
   },
   {
-    "id": "1966", "nav": "1966", "numeral": "1966",
+    "id": "1966",
     "heading": "Six camps in one year",
     "lede": "Camps run from Tulsishyam in February to Chikhaldara in December, by way of Udaipur, Bodh Gaya, Matheran and Nashik. Between them come long runs of talks at colleges in Poona and halls in Bombay.",
-    "photo": {"file": "bodhgaya.webp", "alt": "Carved stone wall with three seated Buddha figures in niches", "caption": "South wall of the Mahabodhi Temple at Bodh Gaya. The June camp was held in the town, at Samanway Ashram.", "author": "Sumitsurai", "licence": "CC BY-SA 4.0", "licence_url": "https://creativecommons.org/licenses/by-sa/4.0", "source_url": "https://commons.wikimedia.org/wiki/File:Mahabodhi_Temple_South_Wall_(2).jpg"}
+    "photo": {
+      "file": "bodhgaya.webp",
+      "alt": "Carved stone wall with three seated Buddha figures in niches",
+      "caption": "South wall of the Mahabodhi Temple at Bodh Gaya. The June camp was held in the town, at Samanway Ashram.",
+      "author": "Sumitsurai",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Mahabodhi_Temple_South_Wall_(2).jpg"
+    }
   },
   {
-    "id": "1967", "nav": "1967", "numeral": "1967",
+    "id": "1967",
     "heading": "On the road all year",
     "lede": "The longest list so far. Camps at Udaipur, Matheran and Malad, a run of series in Hyderabad and Bombay, and tours through Gujarat, Maharashtra and Madhya Pradesh, with Jabalpur talks threaded through the whole year.",
-    "photo": {"file": "matheran.webp", "alt": "A narrow road winding along a dry hillside seen from above", "caption": "The view from Panorama Point, Matheran, site of the Asambhav Kranti camp in October.", "author": "Dinesh Valke", "licence": "CC BY-SA 2.0", "licence_url": "https://creativecommons.org/licenses/by-sa/2.0", "source_url": "https://commons.wikimedia.org/wiki/File:View_from_Panorama_Point,_Matheran_(51877255503).jpg"}
+    "photo": {
+      "file": "matheran.webp",
+      "alt": "A narrow road winding along a dry hillside seen from above",
+      "caption": "The view from Panorama Point, Matheran, site of the Asambhav Kranti camp in October.",
+      "author": "Dinesh Valke",
+      "licence": "CC BY-SA 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "source_url": "https://commons.wikimedia.org/wiki/File:View_from_Panorama_Point,_Matheran_(51877255503).jpg"
+    }
   }
 ]

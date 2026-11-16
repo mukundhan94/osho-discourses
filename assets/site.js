@@ -33,6 +33,16 @@
 
   targets.forEach(function (t) { observer.observe(t); });
 
+  // Fade the band's right edge while more years are off-screen to the right.
+  var band = links[0].parentNode;
+  function edge() {
+    var more = band.scrollLeft + band.clientWidth < band.scrollWidth - 8;
+    band.classList.toggle("more", more);
+  }
+  band.addEventListener("scroll", edge, { passive: true });
+  window.addEventListener("resize", edge);
+  edge();
+
   // The footer is too short to reach the reading line, so mark it at the page end.
   window.addEventListener("scroll", function () {
     var atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
