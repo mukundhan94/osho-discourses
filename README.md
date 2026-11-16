@@ -12,6 +12,7 @@ Coverage: see the site. Each year has one file in `data/talks/`.
 - Talk counts are rows on the wiki, not verified totals. "At least" and "about" are the source's own words.
 - Many titles are later book compilations of talks given in different towns, so one series can span months and cities.
 - Whether a tape survives was not checked for any row.
+- How it was compiled: the wiki pages were first read through a summarising tool, then every data file was compared with the raw wiki text using `scripts/wiki_check.py`. That check covers the number of rows per titled series. It does not cover dates, places, or untitled talks that are grouped here by town.
 - Town coordinates in `data/places.csv` are approximate and only place dots on a small map.
 
 ## Layout
@@ -24,6 +25,7 @@ data/india-outline.json simplified India outline for the maps
 data/world-outline.json simplified world land outline for years abroad
 assets/                 stylesheet, script, fonts and photographs
 scripts/build.py        builds the site into _site/ (Python 3, standard library only)
+scripts/wiki_check.py   compares the data files with the raw wiki year pages
 PRODUCT.md              who the page is for and what it must do
 ```
 
@@ -36,6 +38,14 @@ python3 scripts/build.py
 ```bash
 python3 -m http.server 8431 --directory _site
 ```
+
+Check the data against the wiki (downloads the raw year pages into a cache directory, prints differences, exits non-zero if there are any):
+
+```bash
+python3 scripts/wiki_check.py
+```
+
+Some differences are expected: untitled talks grouped by town have no matching wiki title, and the wiki types some newspaper reports (Samachar Vibhag) as discourses.
 
 `_site/` is not committed. GitHub Actions builds it and deploys it to GitHub Pages on every push to `main` (`.github/workflows/pages.yml`).
 

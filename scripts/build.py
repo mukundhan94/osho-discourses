@@ -148,6 +148,10 @@ def place_labels(ranked, points, limit=7):
             (x - 8, y + 4, "end", (x - 8 - w, y - 7, x - 7, y + 7)),
             (x, y + 18, "middle", (x - w / 2, y + 8, x + w / 2, y + 21)),
             (x, y - 9, "middle", (x - w / 2, y - 21, x + w / 2, y - 8)),
+            (x + 7, y - 6, "start", (x + 6, y - 17, x + 7 + w, y - 3)),
+            (x + 7, y + 14, "start", (x + 6, y + 3, x + 7 + w, y + 17)),
+            (x - 7, y - 6, "end", (x - 7 - w, y - 17, x - 6, y - 3)),
+            (x - 7, y + 14, "end", (x - 7 - w, y + 3, x - 6, y + 17)),
         ]
         for lx, ly, anchor, box in options:
             if not clash(box, town):
@@ -253,7 +257,7 @@ def photo_html(p):
     return (
         '<figure class="photo">'
         f'<div class="plate"><img src="assets/img/{e(p["file"])}" alt="{e(p["alt"])}" loading="lazy" width="1400" height="933"></div>'
-        f'<figcaption>{e(p["caption"])} <span class="credit">Recent photograph by {e(p["author"])}, '
+        f'<figcaption>{e(p["caption"])} <span class="credit">{e(p.get("credit", "Recent photograph by"))} {e(p["author"])}, '
         f'<a href="{e(p["licence_url"])}">{e(p["licence"])}</a>, via <a href="{e(p["source_url"])}">Wikimedia Commons</a>.</span></figcaption>'
         "</figure>"
     )
