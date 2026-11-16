@@ -69,6 +69,8 @@ assets/img/              one photograph per year, and CREDITS.md
 scripts/build.py         builds the site (standard library only)
 scripts/wiki_check.py    compares the data with the raw wiki year pages
 PRODUCT.md               who the page is for and what it must do
+DESIGN.md                the visual system: colours, type, components
+LICENSE, LICENSE-DATA    MIT for the code, CC BY-NC-ND 4.0 for the compiled data
 ```
 
 ## Data format
@@ -126,6 +128,6 @@ The link to the year's wiki page is derived from the `id`.
 - **Map outlines:** [Natural Earth](https://www.naturalearthdata.com/), public domain.
 - **Fonts:** [Yatra One](https://fonts.google.com/specimen/Yatra+One) and [Hind](https://fonts.google.com/specimen/Hind), SIL Open Font License 1.1.
 - **Code:** MIT, see [LICENSE](LICENSE). This covers `scripts/`, `assets/site.css`, `assets/site.js` and `.github/`.
-- **Compiled data in `data/`:** no licence has been chosen yet.
-  - The source wiki states its content is under [CC BY-NC-ND 4.0](https://www.sannyas.wiki/index.php?title=CC_BY-NC-ND_4.0_and_Fair_Use).
-  - An older page on the same wiki says [GNU Free Documentation License 1.3](https://www.sannyas.wiki/index.php?title=The_Sannyas_Wiki:Copyrights).
+- **Compiled data in `data/talks/`, `data/years.json` and `data/places.csv`:** CC BY-NC-ND 4.0, see [LICENSE-DATA](LICENSE-DATA).
+  - This matches the licence the [Sannyas Wiki states for its content](https://www.sannyas.wiki/index.php?title=CC_BY-NC-ND_4.0_and_Fair_Use). Credit the wiki as the source.
+  - An older page on the same wiki names the [GNU Free Documentation License 1.3](https://www.sannyas.wiki/index.php?title=The_Sannyas_Wiki:Copyrights) instead. I did not resolve which one the wiki intends.
