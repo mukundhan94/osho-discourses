@@ -36,7 +36,9 @@ A series that runs across New Year is either split by year, or sits in the year 
 4. Optionally add a `photo`. The file goes in `assets/img/`, and its credit goes in `assets/img/CREDITS.md`.
 5. Run `make media`, `make check` and `make serve`, then look at the page.
 
-A year whose towns all lie in central and northern India gets an India map. Any other year gets a world map fitted to its places.
+A year whose towns all lie in central and northern India gets an India map. Any other year gets a world map fitted to its places. A year with only one place gets a month strip instead of a map.
+
+Two optional keys in `data/years.json` change a year's section: `"route": true` joins the map's places with a dashed line in the order of the rows, and `"closing": [["date", "line"], ...]` replaces the table with those lines (used for 1990).
 
 ## Sources
 

@@ -264,7 +264,11 @@ Colour photograph, `object-fit: cover`, in the arch with a 6px indigo border and
 - **Month divider:** in years of more than 20 rows, a madder display-face month name on a dotted madder rule.
 - **Repeated place:** when a row's place matches the row above, the cell shows a soft ditto mark; the full place stays in the markup for screen readers.
 - **Key:** a one-line reminder of the marks under every year's table.
-- **Phone:** the place moves under the title, before the links.
+- **Phone:** the place moves under the title, before the links. Year pills and links are at least 44px tall. The rail's map or month strip sits beside the year numeral.
+- **Month strip:** replaces the map in a year with one place. Twelve madder bars, height by listed talks per month, in the arched frame.
+- **Route:** where a year sets `route`, a dashed madder line joins its places in the order he spoke there (1986).
+- **Closing:** where a year sets `closing`, its table is replaced by dates in madder display type, each followed by one line. Used for 1990.
+- **Decade labels:** small madder display-face labels (60s, 70s, 80s, 90s) in the year band; not links.
 
 ### Links and focus
 Links keep the text colour with a madder underline and turn madder on hover. Focus is a 3px madder outline offset 3px.
