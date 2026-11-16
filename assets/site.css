@@ -106,19 +106,22 @@ footer h2{font-size:clamp(2rem,3.6vw,2.8rem);line-height:1;margin-bottom:1rem;co
 .keep{white-space:nowrap}
 .sprite{position:absolute}
 
-/* Listen, watch and talk-list links under a series title */
-.media{display:flex;flex-wrap:wrap;gap:.35rem .4rem;align-items:center;margin-top:.45rem}
-.chip{display:inline-flex;align-items:center;gap:.4em;font:600 .8rem/1 var(--text);padding:.45em .8em .38em;border-radius:999px;text-decoration:none;border:2px solid var(--indigo);color:var(--indigo);transition:background-color .2s cubic-bezier(.16,1,.3,1),color .2s cubic-bezier(.16,1,.3,1)}
-.chip svg{width:1em;height:1em;fill:currentColor;flex:none}
-.chip.listen{background:var(--indigo);color:var(--cloth)}
-.chip.watch{background:var(--madder);border-color:var(--madder);color:#fff}
-.chip:hover{background:var(--turmeric);border-color:var(--turmeric);color:var(--ink)}
-.media .meta{font-size:.82rem;color:var(--ink-soft);flex-basis:100%}
-tr.camp .chip{border-color:#fff;color:#fff}
-tr.camp .chip.listen{background:#fff;color:var(--leaf)}
-tr.camp .chip.watch{background:var(--cloth);border-color:var(--cloth);color:var(--madder)}
-tr.camp .chip:hover{background:var(--turmeric);border-color:var(--turmeric);color:var(--ink)}
-tr.camp .media .meta{color:#fff}
+/* Outside links: one quiet line under the series title */
+.media{display:flex;flex-wrap:wrap;gap:.1rem 1.1rem;margin-top:.3rem;font-size:.86rem;line-height:1.3}
+.media a{display:inline-flex;align-items:center;gap:.35em;color:var(--indigo);font-weight:600;text-decoration:none;padding:.15rem 0}
+.media a:hover{color:var(--madder);text-decoration:underline}
+.media svg{width:.95em;height:.95em;fill:currentColor;flex:none}
+tr.camp .media a{color:#fff}
+tr.camp .media a:hover{color:var(--turmeric)}
+.series-size{display:block;font-size:.78rem;font-weight:600;color:var(--ink-soft);white-space:nowrap;margin-top:.15rem}
+tr.camp .series-size{color:#fff}
+.place-inline{display:none}
+.place.same{color:var(--ink-soft)}
+tr.camp .place.same{color:#fff}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+tr.month th{background:none;color:var(--madder);font:400 1.15rem/1 var(--display);letter-spacing:0;text-transform:none;text-align:left;padding:1.1rem 0 .3rem .75rem;border-bottom:2px dotted var(--madder);border-radius:0}
+.key{font-size:.82rem;color:var(--ink-soft);margin-top:.3rem}
+.key .swatch{font-size:.78rem;padding:.02rem .4rem}
 
 /* Tables */
 table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
@@ -200,8 +203,14 @@ footer p{max-width:60ch;margin-bottom:.9rem}
   .body td{display:block;border:0;padding:0;width:auto}
   .body td.dates{grid-column:1;font-size:.92rem}
   .body td.talks{grid-column:2;grid-row:1;font-size:.92rem}
-  .body td.talks::after{content:" " attr(data-unit);font-weight:400}
-  .body td.talks[data-unit=""]::before{content:"count ";font-weight:400}
+  .body td.talks .n::after{content:" " attr(data-unit);font-weight:400}
+  .body td.talks .n[data-unit=""]::before{content:"count ";font-weight:400}
+  .body td.place{display:none}
+  .place-inline{display:block;font-size:.95rem;margin-top:.1rem}
+  .body tr.month{display:block;padding:0;border:0}
+  .body tr.month th{display:block;padding:1rem 0 .3rem}
+  .media a{padding:.45rem 0}
+  .series-size{display:inline;margin:0 0 0 .4rem}
   .body td.what{grid-column:1 / -1}
   .body td.place{grid-column:1 / -1;font-size:.95rem}
   .body tr.camp{background:var(--leaf);padding-inline:.75rem;border-radius:8px;border-bottom:0;margin-bottom:3px}
@@ -210,7 +219,7 @@ footer p{max-width:60ch;margin-bottom:.9rem}
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  .stud,.years a,.chip{transition:none}
+  .stud,.years a{transition:none}
 }
 @media print{
   .years,.skip,.year::before,.mast::after,footer::before{display:none}

@@ -114,43 +114,40 @@ def icon(name):
     return f'<svg aria-hidden="true"><use href="#i-{name}"/></svg>'
 
 
-def media_html(title, media, row_talks, links):
+def media_html(title, media, links):
+    """One quiet line of outside links: Listen, Video, Wiki, then any hand-added links."""
     m = media_for(title, media) or {"wiki_url": "", "listen_url": "", "video": "", "talks": "", "wiki_title": ""}
     key = norm(title)
     extra = links.get(max((k for k in links if key == k or key.startswith(k + " ")), key=len, default=None), [])
-    if not (m["wiki_url"] or m["listen_url"] or extra):
-        return ""
-    chips = []
+    found = []
     if m["listen_url"]:
-        chips.append(f'<a class="chip listen" href="{e(m["listen_url"])}" rel="noopener">{icon("listen")}Listen on OshoWorld</a>')
-    video = int(m["video"] or 0)
-    if video:
+        found.append(("listen", "Listen", m["listen_url"], f"Listen to {title} on OshoWorld"))
+    if int(m["video"] or 0):
         query = urllib.parse.quote_plus("Osho " + re.sub(r"\s*\(.*?\)", "", m["wiki_title"]))
-        chips.append(f'<a class="chip watch" href="https://www.youtube.com/results?search_query={query}" rel="noopener">{icon("watch")}Search YouTube</a>')
+        found.append(("watch", "Video", f"https://www.youtube.com/results?search_query={query}", f"Search YouTube for {title}"))
     if m["wiki_url"]:
-        listed = int(m["talks"] or 0)
-        label = "First talk on the wiki" if "~" in m["wiki_title"] else ("Talk list on the wiki" if listed > 1 else "Series on the wiki")
-        chips.append(f'<a class="chip" href="{e(m["wiki_url"])}" rel="noopener">{icon("list")}{label}</a>')
+        found.append(("list", "Wiki", m["wiki_url"], f"{title} on the Sannyas Wiki"))
     for x in extra:
-        cls = "" if x["kind"] == "read" else " " + x["kind"]
-        chips.append(f'<a class="chip{cls}" href="{e(x["url"])}" rel="noopener">{icon(LINK_KINDS[x["kind"]])}{e(x["label"])}</a>')
-    meta = ""
+        found.append((LINK_KINDS[x["kind"]], x["label"], x["url"], f'{x["label"]}: {title}'))
+    if not found:
+        return ""
+    items = "".join(
+        f'<a href="{e(url)}" rel="noopener" aria-label="{e(name)}">{icon(ic)}{e(label)}</a>' for ic, label, url, name in found
+    )
+    return f'<span class="media">{items}</span>'
+
+
+def series_size(title, media, row_talks):
+    """The wiki's length of the whole series, when it is longer than this row."""
+    m = media_for(title, media)
+    if not m:
+        return ""
     talks = int(m["talks"] or 0)
-    # Only describe the series when the wiki's list is at least as long as this row.
-    if talks > 1 and talks >= (row_talks or 0):
-        audio = int(m["audio"] or 0)
-        parts = [f"{talks} talk{'s' if talks != 1 else ''}"]
-        if video == talks:
-            parts.append("video exists for all")
-        elif video:
-            parts.append(f"video exists for {video}")
-        elif audio:
-            parts.append("audio exists for all" if audio == talks else f"audio exists for {audio}")
-        hours = round(int(m["minutes"] or 0) / 60)
-        if hours:
-            parts.append(f"about {hours} hour{'s' if hours != 1 else ''}")
-        meta = f'<span class="meta">Whole series on the wiki: {", ".join(parts)}</span>'
-    return f'<div class="media">{"".join(chips)}{meta}</div>'
+    if talks <= (row_talks or 0) or talks < 2:
+        return ""
+    hours = round(int(m["minutes"] or 0) / 60)
+    text = f"of {talks}" + (f" \u00b7 {hours}\u00a0h" if hours else "")
+    return f'<span class="series-size" title="The wiki lists {talks} talks in the whole series">{e(text)}</span>'
 
 
 def check_photo(year):
@@ -301,7 +298,7 @@ def map_svg(year, rows, places, outlines):
 
 UNSURE = (
     '<svg class="unsure" viewBox="0 0 16 16" role="img" aria-label="Marked uncertain in the source">'
-    '<circle cx="8" cy="8" r="6"/></svg>'
+    '<title>Marked uncertain in the source</title><circle cx="8" cy="8" r="6"/></svg>'
 )
 
 def unit_for(talks):
@@ -311,7 +308,30 @@ def unit_for(talks):
     return "talk" if n == 1 else "talks"
 
 
-def row_html(r, show_lang, media, links):
+def month_of(r):
+    m = re.match(r"\d{4}-(\d{2})", r["sort"])
+    return int(m.group(1)) if m and m.group(1) != "00" else 0
+
+
+MONTHS = ["", "January", "February", "March", "April", "May", "June", "July", "August",
+          "September", "October", "November", "December"]
+
+
+def rows_html(rows, show_lang, media, links):
+    """Rows in order, with a month divider in long years and repeated places marked."""
+    out, last_month, last_place = [], None, None
+    dividers = len(rows) > 20
+    for r in rows:
+        month = month_of(r)
+        if dividers and month and month != last_month:
+            out.append(f'<tr class="month"><th colspan="4" scope="rowgroup">{MONTHS[month]}</th></tr>')
+            last_month, last_place = month, None
+        out.append(row_html(r, show_lang, media, links, same_place=(r["place"] == last_place)))
+        last_place = r["place"]
+    return "".join(out)
+
+
+def row_html(r, show_lang, media, links, same_place=False):
     note = r["note"].strip()
     label = KIND_LABEL.get(r["kind"])
     if label and label.split()[-1].lower().rstrip("s") not in (r["title"] + " " + note).lower():
@@ -323,12 +343,18 @@ def row_html(r, show_lang, media, links):
     tail = 2 if len(words) > 2 and re.fullmatch(r"[\d,]+", words[-1]) else 1
     head, last = " ".join(words[:-tail]), "\u00a0".join(words[-tail:])
     title_html = (e(head + " ") if head else "") + f'<span class="keep">{e(last)}{lang}</span>'
+    if same_place:
+        place_cell = f'<td class="place same"><span class="vh">{e(r["place"])}</span><span aria-hidden="true" title="Same place as above">\u3003</span></td>'
+    else:
+        place_cell = f'<td class="place">{e(r["place"])}</td>'
     return (
         f'<tr class="{r["kind"]}">'
         f'<td class="dates">{e(r["dates"])}{mark}</td>'
-        f'<td class="what"><span class="title">{title_html}</span>{note_html}{media_html(r["title"], media, talk_number(r["talks"]), links)}</td>'
-        f'<td class="place">{e(r["place"])}</td>'
-        f'<td class="talks" data-unit="{unit_for(r["talks"])}">{e(r["talks"])}</td></tr>'
+        f'<td class="what"><span class="title">{title_html}</span>{note_html}'
+        f'<span class="place-inline">{e(r["place"])}</span>{media_html(r["title"], media, links)}</td>'
+        f'{place_cell}'
+        f'<td class="talks"><span class="n" data-unit="{unit_for(r["talks"])}">{e(r["talks"])}</span>'
+        f'{series_size(r["title"], media, talk_number(r["talks"]))}</td></tr>'
     )
 
 
@@ -365,7 +391,7 @@ def photo_html(p):
 def year_html(year, rows, places, outlines, media, links):
     summary, show_lang = summary_for(rows)
     _, _, ranked = town_weights(rows)
-    towns_line = " · ".join(ranked[:4])
+    towns_line = " ".join(f'<span class="keep">{"· " if i else ""}{e(t)}</span>' for i, t in enumerate(ranked[:4]))
     sub = f'<span class="sub">{e(year["numeral_sub"])}</span>' if year.get("numeral_sub") else ""
     photo = photo_html(year.get("photo"))
     yid = e(year["id"])
@@ -375,7 +401,7 @@ def year_html(year, rows, places, outlines, media, links):
     <span class="stud" aria-hidden="true"></span>
     <div class="rail-in">
     <h2 id="h-{yid}"><span class="num">{e(year['numeral'])}</span>{sub}</h2>
-    <p class="towns">{e(towns_line)}</p>
+    <p class="towns">{towns_line}</p>
     <p class="summary">{e(summary)}</p>
     {map_svg(year, rows, places, outlines)}
     </div>
@@ -391,9 +417,10 @@ def year_html(year, rows, places, outlines, media, links):
     <table>
       <caption>Discourses, {e(year['label'])}, in date order</caption>
       <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
-      <tbody>{''.join(row_html(r, show_lang, media, links) for r in rows)}</tbody>
+      <tbody>{rows_html(rows, show_lang, media, links)}</tbody>
     </table>
     <p class="source">Source: <a href="{e(year['source'])}">Sannyas Wiki, Osho Timeline, {e(year['label'])}</a></p>
+    <p class="key"><b>Heavier type</b> is a titled series. <span class="swatch">Green</span> is a meditation camp. {UNSURE} is uncertain in the source. "of 44" is the length of the whole series on the wiki.</p>
   </div>
 </section>"""
 
@@ -440,9 +467,8 @@ def page(years, sections, grand):
   <ul class="caveats">
     <li>Counts are rows on the Sannyas Wiki, not verified totals. "At least" and "about" are the source's own words.</li>
     <li>Many early titles are later book compilations of talks given in different towns, so one series can span months and cities.</li>
-    <li>Whether a tape survives was not checked for any row.</li>
     <li>Titles are romanised as on the wiki. Where a year mixes Hindi and English, each row says which.</li>
-    <li>This site hosts no recordings. Listen links go to <a href="https://oshoworld.com/audio" rel="noopener">OshoWorld</a>, talk lists to the Sannyas Wiki, and video links to a YouTube search. OSHO International publishes the official recordings at <a href="https://www.osho.com/" rel="noopener">osho.com</a> and on its <a href="https://www.youtube.com/oshointernational" rel="noopener">YouTube channel</a>.</li>
+    <li>This site hosts no recordings. <b>Listen</b> goes to <a href="https://oshoworld.com/audio" rel="noopener">OshoWorld</a>, <b>Wiki</b> to the series on the Sannyas Wiki, and <b>Video</b>, shown where the wiki lists video, to a YouTube search rather than a specific recording. OSHO International publishes the official recordings at <a href="https://www.osho.com/" rel="noopener">osho.com</a> and on its <a href="https://www.youtube.com/oshointernational" rel="noopener">YouTube channel</a>.</li>
   </ul>
   <ul class="legend" aria-label="Marks used in the tables">
     <li><b>Heavier type</b> is a titled series</li>
