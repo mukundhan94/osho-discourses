@@ -133,7 +133,7 @@ UNSURE = (
 def row_html(r):
     note = r["note"].strip()
     if r["kind"] == "camp" and "camp" not in (r["title"] + note).lower():
-        note = ("Meditation camp. " + note).strip()
+        note = f"Meditation camp. {note}" if note else "Meditation camp"
     note_html = f'<span class="note">{e(note)}</span>' if note else ""
     mark = UNSURE if r["unsure"] else ""
     unit = "" if r["talks"] == "unknown" else ("talk" if r["talks"] == "1" else "talks")

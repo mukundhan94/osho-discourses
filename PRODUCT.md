@@ -1,12 +1,12 @@
 # Product
 
-Osho discourse chronology: a single self-contained HTML reference page listing Osho's talks in date order, by year, with series, dates, location and talk count. Shared as a secret gist.
+Osho discourse chronology: a static reference site listing Osho's talks in date order, by year, with series, dates, location and talk count. Public GitHub repo, served by GitHub Pages.
 
 ## Platform
 web
 
 ## Stack
-One static HTML file, inline CSS and minimal inline JS, no build step, no external requests. Rendered through htmlpreview from a gist, and opened locally.
+Static site. A Python standard-library script (scripts/build.py) builds one HTML page from CSV and JSON data into _site/. One stylesheet, one small script, self-hosted fonts and images, no external requests. GitHub Actions builds and deploys to GitHub Pages.
 
 ## Users
 Friends of the author who already know Osho and his talks (confirmed by the author, 2026-11-16). They know the names of the well-known series and want to place them in time and place. Not newcomers: no need to explain who Osho was.
@@ -18,7 +18,7 @@ Let a reader go year by year through the talks and see what was spoken, when, wh
 A compact, honest digest of the Sannyas Wiki year timelines, which are exhaustive but hundreds of rows per year.
 
 ## Operating Context
-Read on a laptop or phone, at leisure, usually from a shared link.
+Read on a laptop or phone, at leisure, usually from a shared link to the GitHub Pages site.
 
 ## Capabilities and Constraints
 - Data source: Sannyas Wiki "Osho Timeline" year pages, plus Osho Source Book and Neeten's Ranakpur paper for the first camp.
