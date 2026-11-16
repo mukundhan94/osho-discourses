@@ -339,7 +339,8 @@
       "licence": "CC BY-SA 4.0",
       "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
       "source_url": "https://commons.wikimedia.org/wiki/File:Boudhanath_stupa,_Kathmandu_01.jpg"
-    }
+    },
+    "route": true
   },
   {
     "id": "1987",
@@ -395,6 +396,16 @@
       "licence": "CC BY-SA 3.0",
       "licence_url": "https://creativecommons.org/licenses/by-sa/3.0",
       "source_url": "https://commons.wikimedia.org/wiki/File:Pune_OSHO_Teerth_Park_Preeti-Parashar_28.JPG"
-    }
+    },
+    "closing": [
+      [
+        "1 to 18 January",
+        "Silent satsangs every evening at Gautam the Buddha Auditorium, Poona. Eighteen in all, continuing from 1989."
+      ],
+      [
+        "19 January 1990",
+        "Osho leaves his body."
+      ]
+    ]
   }
 ]

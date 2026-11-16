@@ -218,21 +218,22 @@ def ring_path(ring, proj):
     return "M" + "L".join("{:.1f},{:.1f}".format(*proj(lat, lon)) for lon, lat in ring) + "Z"
 
 
-def place_labels(ranked, points, limit=7):
-    """Greedy label placement: try right, left, below, above; skip on collision."""
+def place_labels(ranked, points, limit=7, must=4):
+    """Greedy label placement: try right, left, below, above; skip on collision.
+
+    The first `must` towns (the towns line above the map) may sit over the dots
+    of lower-ranked towns if nothing else fits, so the map always names them.
+    """
     boxes, out = [], []
 
-    def clash(box, own):
+    def clash(box, own, strict=True):
         x0, y0, x1, y1 = box
         if x0 < 2 or y0 < 2 or x1 > MAP_W - 2 or y1 > MAP_H - 2:
             return True
         if any(x0 < bx1 and bx0 < x1 and y0 < by1 and by0 < y1 for bx0, by0, bx1, by1 in boxes):
             return True
-        return any(
-            x0 - 2 < dx < x1 + 2 and y0 - 2 < dy < y1 + 2
-            for town, (dx, dy) in points.items()
-            if town != own
-        )
+        others = [t for t in points if t != own] if strict else ranked[:ranked.index(own)]
+        return any(x0 - 2 < points[t][0] < x1 + 2 and y0 - 2 < points[t][1] < y1 + 2 for t in others)
 
     placed = []
     for town in ranked:
@@ -253,19 +254,51 @@ def place_labels(ranked, points, limit=7):
             (x - 7, y - 6, "end", (x - 7 - w, y - 17, x - 6, y - 3)),
             (x - 7, y + 14, "end", (x - 7 - w, y + 3, x - 6, y + 17)),
         ]
-        for lx, ly, anchor, box in options:
-            if not clash(box, town):
-                placed.append((x, y))
-                boxes.append(box)
-                out.append(f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}">{e(town)}</text>')
+        tries = [True, False] if ranked.index(town) < must else [True]
+        done = False
+        for strict in tries:
+            for lx, ly, anchor, box in options:
+                if not clash(box, town, strict):
+                    placed.append((x, y))
+                    boxes.append(box)
+                    out.append(f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}">{e(town)}</text>')
+                    done = True
+                    break
+            if done:
                 break
     return out
+
+
+def month_strip(year, rows, town):
+    """For a one-place year: listed talks per month, by each row's start date."""
+    counts, undated = [0] * 13, 0
+    for r in rows:
+        n = talk_number(r["talks"]) or 0
+        m = month_of(r)
+        if m:
+            counts[m] += n
+        else:
+            undated += n
+    top = max(counts) or 1
+    cells = "".join(
+        f'<li aria-label="{MONTHS[m]}: {counts[m]} talk{"s" if counts[m] != 1 else ""}">'
+        f'<span class="bar" style="--v:{counts[m] / top:.2f}"></span>'
+        f'<span class="c">{counts[m] or ""}</span><span class="m">{MONTHS[m][0]}<span class="rest">{MONTHS[m][1:3]}</span></span></li>'
+        for m in range(1, 13)
+    )
+    extra = f" {undated} more have no month." if undated else ""
+    return (
+        f'<figure class="months"><p class="where">All in {e(town)}</p><ol aria-label="Listed talks by month, {e(year["label"])}">{cells}</ol>'
+        f"<figcaption>Listed talks by month, counted from each entry's start date.{extra}</figcaption></figure>"
+    )
 
 
 def map_svg(year, rows, places, outlines):
     weight, camps, ranked = town_weights(rows)
     if not weight:
         return ""
+    if len(weight) == 1:
+        return month_strip(year, rows, ranked[0])
     win = window_for([places[t] for t in weight])
     proj = projector(win)
     if win[4]:
@@ -284,9 +317,19 @@ def map_svg(year, rows, places, outlines):
         x, y = points[t]
         marks.append(f'<rect class="camp" x="{x-4.5:.1f}" y="{y-4.5:.1f}" width="9" height="9" transform="rotate(45 {x:.1f} {y:.1f})"/>')
     labels = place_labels(ranked, points)
+    route = ""
+    if year.get("route"):
+        order = []
+        for r in rows:
+            for t in r["town_list"]:
+                if t not in order:
+                    order.append(t)
+        pts = " ".join("{:.1f},{:.1f}".format(*points[t]) for t in order)
+        route = f'<polyline class="route" points="{pts}"/>'
+        marks = [route] + marks
     n = len(weight)
     label = f"Map of {where} marking the {n} place{'s' if n != 1 else ''} with listed talks in {year['label']}"
-    caption = "Places with listed talks." + (" Diamonds are camps." if camps else "")
+    caption = "Places with listed talks." + (" Diamonds are camps." if camps else "") + (" The dashed line joins them in the order he spoke there." if route else "")
     return (
         f'<figure class="map"><svg viewBox="0 0 {MAP_W:.0f} {MAP_H:.0f}" role="img" aria-label="{e(label)}">'
         f'<path class="land" d="{land}"/>' + "".join(marks) + "".join(labels) + "</svg>"
@@ -394,6 +437,7 @@ def year_html(year, rows, places, outlines, media, links):
     towns_line = " ".join(f'<span class="keep">{"· " if i else ""}{e(t)}</span>' for i, t in enumerate(ranked[:4]))
     sub = f'<span class="sub">{e(year["numeral_sub"])}</span>' if year.get("numeral_sub") else ""
     photo = photo_html(year.get("photo"))
+    closing, table, key = year_parts(year, rows, show_lang, media, links)
     yid = e(year["id"])
     return f"""
 <section class="year" id="y-{yid}" aria-labelledby="h-{yid}">
@@ -414,22 +458,46 @@ def year_html(year, rows, places, outlines, media, links):
       </div>
       {photo}
     </div>
-    <table>
-      <caption>Discourses, {e(year['label'])}, in date order</caption>
-      <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
-      <tbody>{rows_html(rows, show_lang, media, links)}</tbody>
-    </table>
+    {closing if closing else table}
     <p class="source">Source: <a href="{e(year['source'])}">Sannyas Wiki, Osho Timeline, {e(year['label'])}</a></p>
-    <p class="key"><b>Heavier type</b> is a titled series. <span class="swatch">Green</span> is a meditation camp. {UNSURE} is uncertain in the source. "of 44" is the length of the whole series on the wiki.</p>
+    {"" if closing else key}
   </div>
 </section>"""
 
 
+def year_table(year, rows, show_lang, media, links):
+    return f"""<table>
+      <caption>Discourses, {e(year['label'])}, in date order</caption>
+      <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
+      <tbody>{rows_html(rows, show_lang, media, links)}</tbody>
+    </table>"""
+
+
+KEY = ('<p class="key"><b>Heavier type</b> is a titled series. <span class="swatch">Green</span> is a meditation camp. '
+       f'{UNSURE} is uncertain in the source. "of 44" is the length of the whole series on the wiki.</p>')
+
+
+def closing_html(year):
+    c = year["closing"]
+    parts = "".join(f'<p class="when">{e(w)}</p><p class="what">{e(t)}</p>' for w, t in c)
+    return f'<div class="closing">{parts}</div>'
+
+
+def year_parts(year, rows, show_lang, media, links):
+    closing = closing_html(year) if year.get("closing") else ""
+    return closing, year_table(year, rows, show_lang, media, links), KEY
+
+
 def page(years, sections, grand):
     span = f"{years[0]['numeral']} to {years[-1]['numeral']}"
-    nav = "".join(
-        f'<a href="#y-{e(y["id"])}" aria-label="{e(y["label"])}">{e(y["nav"])}</a>' for y in years
-    )
+    nav, decade = [], None
+    for y in years:
+        d = y["id"][:3] if y["id"].isdigit() else None
+        if d and d != decade and decade is not None or (d and decade is None and y is not years[0]):
+            nav.append(f'<span class="decade" aria-hidden="true">{d[2]}0s</span>')
+        decade = d or decade
+        nav.append(f'<a href="#y-{e(y["id"])}" aria-label="{e(y["label"])}">{e(y["nav"])}</a>')
+    nav = "".join(nav)
     sources = "".join(f'<li><a href="{e(u)}">{e(t)}</a></li>' for t, u in SOURCES)
     return f"""<!doctype html>
 <html lang="en">
@@ -486,7 +554,6 @@ def page(years, sections, grand):
     </div>
     <div>
       <p>Compiled in November 2026. Each year links to its wiki page under its table. The wiki is the authority for every row. Where this page and the wiki differ, the wiki is right and this page needs correcting.</p>
-      <p>{NOTICE}</p>
       <p>The site is open source. <a href="{REPO}">See the code and data on GitHub</a>, <a href="{REPO}/issues/new/choose">suggest a correction or a link</a>, or read <a href="{REPO}/blob/main/CONTRIBUTING.md">how to contribute</a>.</p>
       <p>Map outlines are from Natural Earth (public domain). Positions are approximate. Photographs are credited beside each one. All are recent and reused under Creative Commons licences, except the 1983 photograph of Rajneeshpuram, which its photographer releases for any use with attribution. Type is Yatra One and Hind, both under the SIL Open Font License.</p>
     </div>
@@ -524,9 +591,10 @@ def main():
         if not any(k == key or k.startswith(key + " ") for k in row_keys):
             raise SystemExit(f"links.csv: no series is titled {items[0]['title']!r}")
     grand = {"rows": len(all_rows), "towns": len({t for r in all_rows for t in r["town_list"]})}
-    if OUT.exists():
-        shutil.rmtree(OUT)
-    OUT.mkdir()
+    # Empty _site/ rather than delete it, so a local server serving it keeps working.
+    OUT.mkdir(exist_ok=True)
+    for child in OUT.iterdir():
+        shutil.rmtree(child) if child.is_dir() else child.unlink()
     shutil.copytree(ROOT / "assets", OUT / "assets")
     (OUT / ".nojekyll").write_text("")
     (OUT / "index.html").write_text(page(years, sections, grand), encoding="utf-8")
