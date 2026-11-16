@@ -125,3 +125,33 @@
     go(a.getAttribute("href"));
   });
 })();
+
+// Four-card tour: one card at a time, lighting up the part of the example rows it describes.
+(function () {
+  var tour = document.querySelector("[data-tour]");
+  if (!tour) return;
+  var cards = tour.querySelectorAll(".tcard");
+  var nav = tour.querySelector(".tnav");
+  var back = tour.querySelector(".tback");
+  var next = tour.querySelector(".tnext");
+  var dots = tour.querySelectorAll(".tdots i");
+  var at = 0;
+  tour.classList.add("js");
+  nav.hidden = false;
+  function show(n) {
+    at = n;
+    cards.forEach(function (c, k) { c.classList.toggle("active", k === n); });
+    dots.forEach(function (d, k) { d.classList.toggle("on", k === n); });
+    tour.dataset.step = cards[n].dataset.focus;
+    back.disabled = n === 0;
+    next.textContent = n === cards.length - 1 ? "Start again" : "Next";
+    next.setAttribute("aria-label", n === cards.length - 1 ? "Start the tour again" : "Next card, " + (n + 2) + " of " + cards.length);
+  }
+  next.addEventListener("click", function () { show(at === cards.length - 1 ? 0 : at + 1); });
+  back.addEventListener("click", function () { if (at > 0) show(at - 1); });
+  tour.addEventListener("keydown", function (ev) {
+    if (ev.key === "ArrowRight" && at < cards.length - 1) { show(at + 1); ev.preventDefault(); }
+    if (ev.key === "ArrowLeft" && at > 0) { show(at - 1); ev.preventDefault(); }
+  });
+  show(0);
+})();

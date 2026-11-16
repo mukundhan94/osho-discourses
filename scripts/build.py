@@ -508,7 +508,52 @@ def asset_version(name):
     return hashlib.sha256((ROOT / "assets" / name).read_bytes()).hexdigest()[:10]
 
 
-def page(years, sections, grand, outlines):
+TOUR = [
+    ("row", "indigo", "Each row is a series",
+     "When, what, where, and how many talks. <b>Heavy type</b> is a titled series; plain type is talks without a title, named here by town. "
+     "Many early titles are later books that gather talks from several towns. Where a year mixes Hindi and English, a tag says which."),
+    ("camp", "leaf", "Green means a camp",
+     "A meditation camp, like the first one at Ranakpur in June 1964. Camps show as green diamonds on the maps too."),
+    ("count", "madder", "Counts come from the wiki",
+     "14 talks in this row, <b>of 15</b> in the whole series. Counts are rows on the Sannyas Wiki, not checked totals; "
+     "\u201cat least\u201d and \u201cabout\u201d are the wiki's own words. A dashed ring means the wiki is unsure of a date, place or count."),
+    ("links", "turmeric", "Links go elsewhere",
+     '<b>Listen</b> opens free MP3s on OshoWorld, <b>Video</b> a YouTube search, <b>Wiki</b> the series page. '
+     'Official recordings are published at <a href="https://www.osho.com/" rel="noopener">osho.com</a>. Nothing is hosted or sold here.'),
+]
+
+TOUR_ICONS = {
+    "row": '<path d="M3 6h18M3 12h18M3 18h11" />',
+    "camp": '<path d="M12 3l7 9-7 9-7-9z" />',
+    "count": '<circle cx="12" cy="12" r="8" stroke-dasharray="4 3" /><path d="M9 12h6M12 9v6" />',
+    "links": '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />',
+}
+
+
+def tour_html(sample_rows):
+    cards = "".join(
+        f'<li class="tcard t-{tone}" data-focus="{focus}" id="tour-{n}">'
+        f'<span class="tnum" aria-hidden="true">{n}</span>'
+        f'<svg class="ticon" viewBox="0 0 24 24" aria-hidden="true">{TOUR_ICONS[focus]}</svg>'
+        f'<h3>{e(head)}</h3><p>{text}</p></li>'
+        for n, (focus, tone, head, text) in enumerate(TOUR, 1)
+    )
+    return f"""<div class="tour" data-tour>
+    <div class="tour-cards">
+      <ol class="tcards" aria-label="Four things to know before reading">{cards}</ol>
+      <div class="tnav" hidden>
+        <button type="button" class="tback">Back</button>
+        <span class="tdots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <button type="button" class="tnext">Next</button>
+      </div>
+    </div>
+    <div class="tour-stage body" aria-label="Three example rows from 1964">
+      <table><caption>Example rows from 1964</caption><tbody>{sample_rows}</tbody></table>
+    </div>
+  </div>"""
+
+
+def page(years, sections, grand, outlines, tour):
     span = f"{years[0]['numeral']} to {years[-1]['numeral']}"
     nav, decade = [], None
     for y in years:
@@ -559,19 +604,10 @@ def page(years, sections, grand, outlines):
 <nav class="years" aria-label="Years">{nav}<a href="#sources">Sources</a></nav>
 <main id="main">
 <section class="reading" aria-labelledby="h-reading">
-  <h2 id="h-reading">How to read this</h2>
-  <p class="notice">{NOTICE}</p>
-  <ul class="caveats">
-    <li>Counts are rows on the Sannyas Wiki, not verified totals. "At least" and "about" are the source's own words.</li>
-    <li>Many early titles are later book compilations of talks given in different towns, so one series can span months and cities.</li>
-    <li>Titles are romanised as on the wiki. Where a year mixes Hindi and English, each row says which.</li>
-    <li>This site hosts no recordings. <b>Listen</b> goes to <a href="https://oshoworld.com/audio" rel="noopener">OshoWorld</a>, <b>Wiki</b> to the series on the Sannyas Wiki, and <b>Video</b>, shown where the wiki lists video, to a YouTube search rather than a specific recording. OSHO International publishes the official recordings at <a href="https://www.osho.com/" rel="noopener">osho.com</a> and on its <a href="https://www.youtube.com/oshointernational" rel="noopener">YouTube channel</a>.</li>
-  </ul>
-  <ul class="legend" aria-label="Marks used in the tables">
-    <li><b>Heavier type</b> is a titled series</li>
-    <li><span class="swatch">Green row</span> is a meditation camp</li>
-    <li>{UNSURE} date, place or count marked uncertain in the source</li>
-  </ul>
+  <h2 id="h-reading" class="vh">How to read this page</h2>
+  <p class="lead">A free, non-commercial library of when and where Osho spoke.
+  <small>Nothing here is for sale, and nothing is hosted here. Every recording link goes to someone else's site.</small></p>
+  {tour}
 </section>
 {''.join(sections)}
 </main>
@@ -626,6 +662,15 @@ def main():
     for key, items in links.items():
         if not any(k == key or k.startswith(key + " ") for k in row_keys):
             raise SystemExit(f"links.csv: no series is titled {items[0]['title']!r}")
+    sample_src = load_rows("1964", places)
+    pick = {"Mahaveer Ya Mahavinash, 3": "row links", "Sadhana Path": "camp count", "Talks in Nandurbar": "row"}
+    sample = []
+    for r in sample_src:
+        if r["title"] in pick:
+            html_row = row_html(r, False, media, links, rid="")
+            html_row = html_row.replace(' id=""', f' data-tour-row="{pick[r["title"]]}"', 1)
+            sample.append(html_row)
+    tour = tour_html("".join(sample))
     grand = {"rows": len(all_rows), "towns": len({t for r in all_rows for t in r["town_list"]})}
     # Empty _site/ rather than delete it, so a local server serving it keeps working.
     OUT.mkdir(exist_ok=True)
@@ -633,7 +678,7 @@ def main():
         shutil.rmtree(child) if child.is_dir() else child.unlink()
     shutil.copytree(ROOT / "assets", OUT / "assets")
     (OUT / ".nojekyll").write_text("")
-    (OUT / "index.html").write_text(page(years, sections, grand, outlines), encoding="utf-8")
+    (OUT / "index.html").write_text(page(years, sections, grand, outlines, tour), encoding="utf-8")
     print(f"built _site/index.html: {grand['rows']} entries, {grand['towns']} places, {len(years)} sections")
 
 
