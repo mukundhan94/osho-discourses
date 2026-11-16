@@ -3,5 +3,18 @@
   "framework": null,
   "installCommand": "",
   "buildCommand": "python3 scripts/build.py",
-  "outputDirectory": "_site"
+  "outputDirectory": "_site",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.oshodiscourses.com"
+        }
+      ],
+      "destination": "https://oshodiscourses.com/:path*",
+      "permanent": true
+    }
+  ]
 }
