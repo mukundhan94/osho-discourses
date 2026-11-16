@@ -83,7 +83,7 @@ def town_weights(rows):
             weight[t] = weight.get(t, 0) + n / len(r["town_list"])
             if r["kind"] == "camp":
                 camps.add(t)
-    ranked = sorted(weight, key=lambda t: (t not in camps, -weight[t], t))
+    ranked = sorted(weight, key=lambda t: (-weight[t], t not in camps, t))
     return weight, camps, ranked
 
 
@@ -132,16 +132,21 @@ def place_labels(ranked, points, limit=7):
             return True
         if any(x0 < bx1 and bx0 < x1 and y0 < by1 and by0 < y1 for bx0, by0, bx1, by1 in boxes):
             return True
+        # Avoid dots of towns ranked at or above this one; lower-ranked dots may sit under a label.
+        rank = ranked.index(own)
         return any(
-            x0 - 3 < dx < x1 + 3 and y0 - 3 < dy < y1 + 3
-            for town, (dx, dy) in points.items()
-            if town != own
+            x0 - 3 < points[t][0] < x1 + 3 and y0 - 3 < points[t][1] < y1 + 3
+            for t in ranked[:rank]
         )
 
+    placed = []
     for town in ranked:
         if len(out) >= limit:
             break
         x, y = points[town]
+        # A town whose dot sits on a higher-ranked labelled dot stays unlabelled.
+        if any(abs(x - px) < 10 and abs(y - py) < 10 for px, py in placed):
+            continue
         w = len(town) * 6.3 + 2
         options = [
             (x + 8, y + 4, "start", (x + 7, y - 7, x + 8 + w, y + 7)),
@@ -155,6 +160,7 @@ def place_labels(ranked, points, limit=7):
         ]
         for lx, ly, anchor, box in options:
             if not clash(box, town):
+                placed.append((x, y))
                 boxes.append(box)
                 out.append(f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}">{e(town)}</text>')
                 break
@@ -224,10 +230,12 @@ def row_html(r, show_lang):
     note_html = f'<span class="note">{e(note)}</span>' if note else ""
     lang = f' <span class="lang">{LANGS[r["lang"]]}</span>' if show_lang and r["lang"] else ""
     mark = UNSURE if r["unsure"] else ""
+    head, _, last = r["title"].rpartition(" ")
+    title_html = (e(head + " ") if head else "") + f'<span class="keep">{e(last)}{lang}</span>' if lang else e(r["title"])
     return (
         f'<tr class="{r["kind"]}">'
         f'<td class="dates">{e(r["dates"])}{mark}</td>'
-        f'<td class="what"><span class="title">{e(r["title"])}</span>{lang}{note_html}</td>'
+        f'<td class="what"><span class="title">{title_html}</span>{note_html}</td>'
         f'<td class="place">{e(r["place"])}</td>'
         f'<td class="talks" data-unit="{unit_for(r["talks"])}">{e(r["talks"])}</td></tr>'
     )
@@ -348,7 +356,7 @@ def page(years, sections, grand):
     </div>
     <div>
       <p>Compiled in November 2026. Each year links to its wiki page under its table. The wiki is the authority for every row. Where this page and the wiki differ, the wiki is right and this page needs correcting.</p>
-      <p>Map outlines are from Natural Earth (public domain). Positions are approximate. Photographs are recent, credited beside each one, and reused under their Creative Commons licences. Type is Teko and Mukta, both under the SIL Open Font License.</p>
+      <p>Map outlines are from Natural Earth (public domain). Positions are approximate. Photographs are credited beside each one. All are recent and reused under Creative Commons licences, except the 1983 photograph of Rajneeshpuram, which its photographer releases for any use with attribution. Type is Teko and Mukta, both under the SIL Open Font License.</p>
     </div>
   </div>
 </footer>

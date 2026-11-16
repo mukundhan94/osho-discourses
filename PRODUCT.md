@@ -12,7 +12,7 @@ Static site. A Python standard-library script (scripts/build.py) builds one HTML
 Friends of the author who already know Osho and his talks (confirmed by the author, 2026-11-16). They know the names of the well-known series and want to place them in time and place. Not newcomers: no need to explain who Osho was.
 
 ## Product Purpose
-Let a reader go year by year through the talks and see what was spoken, when, where, and how many talks (confirmed main job: read year by year). Currently covers 1954 to 1967; the research continues through 1990 and the page grows by appending years.
+Let a reader go year by year through the talks and see what was spoken, when, where, and how many talks (confirmed main job: read year by year). Covers 1954 to January 1990, including the years in the United States and the 1986 world tour.
 
 ## Positioning
 A compact, honest digest of the Sannyas Wiki year timelines, which are exhaustive but hundreds of rows per year.
@@ -25,7 +25,7 @@ Read on a laptop or phone, at leisure, usually from a shared link to the GitHub 
 - Talk counts are rows on the wiki, not verified totals.
 - Which talks have surviving audio was not checked; the page must say so.
 - Many titles are later book compilations of scattered talks.
-- All talks in this period are in Hindi, in India.
+- Talks are in Hindi or English; rows carry a language tag where a year mixes both.
 
 ## Brand Commitments
 None. No ashram, foundation or publisher branding; this is an independent reference. No em-dashes in copy.
