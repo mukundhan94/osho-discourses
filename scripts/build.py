@@ -4,6 +4,7 @@
 Usage: python3 scripts/build.py
 """
 import csv
+import hashlib
 import html
 import json
 import math
@@ -214,8 +215,21 @@ def projector(win):
     return lambda lat, lon: ((lon - lo0) * scale, (la1 - lat) * scale)
 
 
-def ring_path(ring, proj):
-    return "M" + "L".join("{:.1f},{:.1f}".format(*proj(lat, lon)) for lon, lat in ring) + "Z"
+def raw_path(rings):
+    """Outline in plain longitude and negated latitude; each map scales it with a transform."""
+    return "".join("M" + "L".join(f"{lon:g},{-lat:g}" for lon, lat in ring) + "Z" for ring in rings)
+
+
+def outline_use(win):
+    """A <use> of the shared outline, mapped into this map's window by the same linear projection."""
+    lo0, lo1, la0, la1, india = win
+    if india:
+        kx = math.cos(math.radians(23))
+        scale = MAP_H / (la1 - la0)
+        a = kx * scale
+        return f'<use class="land" href="#o-india" transform="matrix({a:.4f} 0 0 {scale:.4f} {-lo0 * a:.2f} {la1 * scale:.2f})"/>'
+    scale = MAP_W / (lo1 - lo0)
+    return f'<use class="land" href="#o-world" transform="matrix({scale:.4f} 0 0 {scale:.4f} {-lo0 * scale:.2f} {la1 * scale:.2f})"/>'
 
 
 def place_labels(ranked, points, limit=7, must=4):
@@ -301,12 +315,8 @@ def map_svg(year, rows, places, outlines):
         return month_strip(year, rows, ranked[0])
     win = window_for([places[t] for t in weight])
     proj = projector(win)
-    if win[4]:
-        land = ring_path(outlines["india"], proj)
-        where = "central and northern India"
-    else:
-        land = "".join(ring_path(r, proj) for r in outlines["world"])
-        where = "the world"
+    land = outline_use(win)
+    where = "central and northern India" if win[4] else "the world"
     points = {t: proj(*places[t]) for t in weight}
     marks = []
     for t in sorted((t for t in weight if t not in camps), key=lambda t: -weight[t]):
@@ -332,7 +342,7 @@ def map_svg(year, rows, places, outlines):
     caption = "Places with listed talks." + (" Diamonds are camps." if camps else "") + (" The dashed line joins them in the order he spoke there." if route else "")
     return (
         f'<figure class="map"><svg viewBox="0 0 {MAP_W:.0f} {MAP_H:.0f}" role="img" aria-label="{e(label)}">'
-        f'<path class="land" d="{land}"/>' + "".join(marks) + "".join(labels) + "</svg>"
+        f'{land}' + "".join(marks) + "".join(labels) + "</svg>"
         f"<figcaption>{caption}</figcaption></figure>"
     )
 
@@ -363,18 +373,23 @@ MONTHS = ["", "January", "February", "March", "April", "May", "June", "July", "A
 def rows_html(rows, show_lang, media, links):
     """Rows in order, with a month divider in long years and repeated places marked."""
     out, last_month, last_place = [], None, None
+    seen = set()
     dividers = len(rows) > 20
     for r in rows:
         month = month_of(r)
         if dividers and month and month != last_month:
             out.append(f'<tr class="month"><th colspan="4" scope="rowgroup">{MONTHS[month]}</th></tr>')
             last_month, last_place = month, None
-        out.append(row_html(r, show_lang, media, links, same_place=(r["place"] == last_place)))
+        rid = "r-" + re.sub(r"[^0-9a-z]+", "-", r["sort"].lower())
+        while rid in seen:
+            rid += "x"
+        seen.add(rid)
+        out.append(row_html(r, show_lang, media, links, same_place=(r["place"] == last_place), rid=rid))
         last_place = r["place"]
     return "".join(out)
 
 
-def row_html(r, show_lang, media, links, same_place=False):
+def row_html(r, show_lang, media, links, same_place=False, rid=""):
     note = r["note"].strip()
     label = KIND_LABEL.get(r["kind"])
     if label and label.split()[-1].lower().rstrip("s") not in (r["title"] + " " + note).lower():
@@ -391,7 +406,7 @@ def row_html(r, show_lang, media, links, same_place=False):
     else:
         place_cell = f'<td class="place">{e(r["place"])}</td>'
     return (
-        f'<tr class="{r["kind"]}">'
+        f'<tr class="{r["kind"]}" id="{rid}">'
         f'<td class="dates">{e(r["dates"])}{mark}</td>'
         f'<td class="what"><span class="title">{title_html}</span>{note_html}'
         f'<span class="place-inline">{e(r["place"])}</span>{media_html(r["title"], media, links)}</td>'
@@ -424,7 +439,7 @@ def photo_html(p):
         return ""
     return (
         '<figure class="photo">'
-        f'<div class="plate"><img src="assets/img/{e(p["file"])}" alt="{e(p["alt"])}" loading="lazy" width="1400" height="933"></div>'
+        f'<div class="plate"><img src="assets/img/{e(p["file"])}" alt="{e(p["alt"])}" loading="lazy" width="800" height="533" decoding="async"></div>'
         f'<figcaption>{e(p["caption"])} <span class="credit">{e(p.get("credit", "Recent photograph by"))} {e(p["author"])}, '
         f'<a href="{e(p["licence_url"])}">{e(p["licence"])}</a>, via <a href="{e(p["source_url"])}">Wikimedia Commons</a>.</span></figcaption>'
         "</figure>"
@@ -488,7 +503,12 @@ def year_parts(year, rows, show_lang, media, links):
     return closing, year_table(year, rows, show_lang, media, links), KEY
 
 
-def page(years, sections, grand):
+def asset_version(name):
+    """Short content hash, so a changed stylesheet or script is never served from a stale cache."""
+    return hashlib.sha256((ROOT / "assets" / name).read_bytes()).hexdigest()[:10]
+
+
+def page(years, sections, grand, outlines):
     span = f"{years[0]['numeral']} to {years[-1]['numeral']}"
     nav, decade = [], None
     for y in years:
@@ -514,10 +534,11 @@ def page(years, sections, grand):
 <meta name="theme-color" content="#1F3A6B">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F3A6B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23E9A21A'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23C2281D'/%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/yatra-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/site.css?v={asset_version('site.css')}">
 </head>
 <body>
 <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+<defs><path id="o-india" d="{outlines['india_d']}"/><path id="o-world" d="{outlines['world_d']}"/></defs>
 <symbol id="i-listen" viewBox="0 0 16 16"><path d="M8 1a6 6 0 0 0-6 6v5a2 2 0 0 0 2 2h1V8H3.5V7a4.5 4.5 0 0 1 9 0v1H11v6h1a2 2 0 0 0 2-2V7a6 6 0 0 0-6-6z"/></symbol>
 <symbol id="i-watch" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></symbol>
 <symbol id="i-list" viewBox="0 0 16 16"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></symbol>
@@ -525,7 +546,15 @@ def page(years, sections, grand):
 <a class="skip" href="#main">Skip to the chronology</a>
 <header class="mast">
   <h1>Osho: the discourses<br><span>{span}</span></h1>
+  <div class="intro-side">
   <p>Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
+  <form class="find" role="search" hidden>
+    <label for="find">Find a series</label>
+    <input id="find" type="search" autocomplete="off" spellcheck="false" placeholder="Beyond Psychology, Geeta-Darshan" aria-controls="find-results" aria-describedby="find-count">
+    <p id="find-count" class="find-count" aria-live="polite"></p>
+    <ol id="find-results" class="find-results"></ol>
+  </form>
+  </div>
 </header>
 <nav class="years" aria-label="Years">{nav}<a href="#sources">Sources</a></nav>
 <main id="main">
@@ -559,7 +588,7 @@ def page(years, sections, grand):
     </div>
   </div>
 </footer>
-<script src="assets/site.js" defer></script>
+<script src="assets/site.js?v={asset_version('site.js')}" defer></script>
 </body>
 </html>
 """
@@ -574,6 +603,8 @@ def main():
         "india": json.loads((DATA / "india-outline.json").read_text(encoding="utf-8"))["ring"],
         "world": json.loads((DATA / "world-outline.json").read_text(encoding="utf-8"))["rings"],
     }
+    outlines["india_d"] = raw_path([outlines["india"]])
+    outlines["world_d"] = raw_path(outlines["world"])
     sections, all_rows = [], []
     for y in years:
         y.setdefault("label", y["id"])
@@ -597,7 +628,7 @@ def main():
         shutil.rmtree(child) if child.is_dir() else child.unlink()
     shutil.copytree(ROOT / "assets", OUT / "assets")
     (OUT / ".nojekyll").write_text("")
-    (OUT / "index.html").write_text(page(years, sections, grand), encoding="utf-8")
+    (OUT / "index.html").write_text(page(years, sections, grand, outlines), encoding="utf-8")
     print(f"built _site/index.html: {grand['rows']} entries, {grand['towns']} places, {len(years)} sections")
 
 

@@ -57,3 +57,71 @@
     if (atEnd() || links[links.length - 1].hasAttribute("aria-current")) refresh();
   }, { passive: true });
 })();
+
+// Series search: filters the page's own rows by title and jumps to the chosen one.
+(function () {
+  var form = document.querySelector(".find");
+  if (!form) return;
+  form.hidden = false;
+  var input = form.querySelector("input");
+  var list = form.querySelector(".find-results");
+  var count = form.querySelector(".find-count");
+  function titleText(el) {
+    if (!el) return "";
+    var copy = el.cloneNode(true);
+    copy.querySelectorAll(".lang").forEach(function (n) { n.remove(); });
+    return copy.textContent.replace(/\s+/g, " ").trim();
+  }
+  var index = Array.prototype.map.call(document.querySelectorAll(".year tbody tr[id]"), function (tr) {
+    var section = tr.closest(".year");
+    var title = tr.querySelector(".title");
+    return {
+      id: tr.id,
+      title: titleText(title),
+      when: (section.querySelector("h2 .num") || {}).textContent + ", " + tr.querySelector(".dates").textContent.trim(),
+    };
+  });
+  function norm(s) { return s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); }
+  index.forEach(function (r) { r.key = norm(r.title); });
+
+  function render() {
+    var q = norm(input.value);
+    list.innerHTML = "";
+    if (q.length < 2) { count.textContent = ""; return; }
+    var hits = index.filter(function (r) { return r.key.indexOf(q) !== -1; });
+    count.textContent = hits.length ? hits.length + " found" + (hits.length > 12 ? ", showing the first 12" : "") : "Nothing found";
+    hits.slice(0, 12).forEach(function (r) {
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = "#" + r.id;
+      a.innerHTML = "<b></b><span></span>";
+      a.firstChild.textContent = r.title;
+      a.lastChild.textContent = r.when;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  }
+  function go(href) {
+    var row = document.getElementById(href.slice(1));
+    if (!row) return;
+    history.pushState(null, "", href);
+    // Jump straight there: a smooth scroll across tens of thousands of pixels is slow and disorienting.
+    row.scrollIntoView({ block: "center", behavior: "instant" });
+    document.querySelectorAll("tr.found").forEach(function (r) { r.classList.remove("found"); });
+    row.classList.add("found");
+    list.innerHTML = "";
+    count.textContent = "";
+  }
+  input.addEventListener("input", render);
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var first = list.querySelector("a");
+    if (first) go(first.getAttribute("href"));
+  });
+  list.addEventListener("click", function (ev) {
+    var a = ev.target.closest("a");
+    if (!a) return;
+    ev.preventDefault();
+    go(a.getAttribute("href"));
+  });
+})();

@@ -42,6 +42,20 @@ p{margin:0}
 .mast h1{font-size:clamp(2.6rem,8.4vw,5.6rem);line-height:.95;color:var(--turmeric)}
 .mast h1 span{color:var(--cloth)}
 .mast p{font-size:1rem;line-height:1.45;padding-bottom:.4rem}
+.find{margin-top:.7rem;position:relative}
+.find label{display:block;font:600 .85rem/1 var(--text);color:var(--turmeric);margin-bottom:.35rem}
+.find input{width:100%;font:400 1rem/1.2 var(--text);color:var(--ink);background:var(--cloth);border:3px solid var(--turmeric);border-radius:999px;padding:.6rem 1rem;min-height:44px}
+.find input::placeholder{color:var(--ink-soft);opacity:.8}
+.find input:focus-visible{outline:3px solid var(--cloth);outline-offset:2px}
+.find-count{font-size:.85rem;margin:.35rem 0 0 .4rem;min-height:1em}
+.find-results{list-style:none;margin:.35rem 0 0;padding:0;position:absolute;left:0;right:0;z-index:30;background:var(--cloth);border:3px solid var(--indigo);border-radius:10px;box-shadow:0 10px 24px -12px rgba(42,26,18,.55);max-height:22rem;overflow:auto}
+.find-results:empty{display:none}
+.find-results a{display:block;padding:.55rem .9rem;color:var(--ink);text-decoration:none;border-bottom:1px dotted rgba(31,58,107,.35)}
+.find-results a:hover,.find-results a:focus-visible{background:var(--turmeric);outline:none}
+.find-results b{display:block;font-weight:700;color:var(--indigo)}
+.find-results span{font-size:.85rem;color:var(--ink-soft)}
+tbody tr:target td,tbody tr.found td{background:#F3D27A}
+tbody tr.camp:target td,tbody tr.camp.found td{background:#1F5A39}
 
 /* Year band: printed pills */
 .years{position:sticky;top:0;z-index:10;margin-top:30px;background:var(--cloth);display:flex;gap:.15rem;align-items:center;padding:.35rem var(--gutter);min-height:var(--band);border-bottom:2px dotted var(--indigo);overflow-x:auto;scrollbar-width:none;font:600 1rem/1 var(--text)}
@@ -87,6 +101,7 @@ footer h2{font-size:clamp(2rem,3.6vw,2.8rem);line-height:1;margin-bottom:1rem;co
 .map{margin:1.2rem 0 0}
 .map svg{display:block;width:100%;height:auto;overflow:hidden;border-radius:50% 50% 8px 8px / 30% 30% 8px 8px;border:3px solid var(--indigo);box-shadow:0 0 0 3px var(--turmeric);background:#CFE0E6}
 .map .land{fill:#F1D99A;stroke:var(--indigo);stroke-width:.8;stroke-linejoin:round}
+#o-india,#o-world{vector-effect:non-scaling-stroke}
 .map .town{fill:var(--madder);stroke:#fff;stroke-width:1}
 .map .camp{fill:var(--leaf);stroke:#fff;stroke-width:1.2}
 .map text{font:700 11.5px var(--text);fill:var(--indigo);paint-order:stroke;stroke:#F1D99A;stroke-width:3px;stroke-linejoin:round}
