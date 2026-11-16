@@ -584,11 +584,16 @@ def page(years, sections, grand, outlines):
     <div>
       <p>Compiled in November 2026. Each year links to its wiki page under its table. The wiki is the authority for every row. Where this page and the wiki differ, the wiki is right and this page needs correcting.</p>
       <p>The site is open source. <a href="{REPO}">See the code and data on GitHub</a>, <a href="{REPO}/issues/new/choose">suggest a correction or a link</a>, or read <a href="{REPO}/blob/main/CONTRIBUTING.md">how to contribute</a>.</p>
+      <p>Visits are counted with Vercel Web Analytics, which records anonymous page views without third-party cookies. Vercel Speed Insights measures how fast the page loads.</p>
       <p>Map outlines are from Natural Earth (public domain). Positions are approximate. Photographs are credited beside each one. All are recent and reused under Creative Commons licences, except the 1983 photograph of Rajneeshpuram, which its photographer releases for any use with attribution. Type is Yatra One and Hind, both under the SIL Open Font License.</p>
     </div>
   </div>
 </footer>
 <script src="assets/site.js?v={asset_version('site.js')}" defer></script>
+<script>window.va = window.va || function () {{ (window.vaq = window.vaq || []).push(arguments); }};
+window.si = window.si || function () {{ (window.siq = window.siq || []).push(arguments); }};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
 </body>
 </html>
 """
