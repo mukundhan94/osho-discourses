@@ -8,7 +8,7 @@ The site is a folder of static files. `make build` writes it to `_site/`, which 
 |---|---|---|
 | https://oshodiscourses.com/ | Vercel (Hobby plan) | Every push to `main` |
 
-`www.oshodiscourses.com` redirects to the address above. GitHub Pages is turned off.
+`www.oshodiscourses.com` redirects to the address above (a permanent redirect set on the domain in Vercel). GitHub Pages is turned off.
 
 `vercel.json` tells Vercel to run `python3 scripts/build.py` and serve `_site`.
 
