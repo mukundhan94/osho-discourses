@@ -178,7 +178,7 @@ footer p{max-width:60ch;margin-bottom:.9rem}
   .body td.talks[data-unit=""]::before{content:"count ";font-weight:400}
   .body td.what{grid-column:1 / -1}
   .body td.place{grid-column:1 / -1;font-size:.95rem}
-  .body tr.camp{background:var(--leaf);padding-inline:.75rem;border-radius:8px;border-bottom:3px solid var(--cloth)}
+  .body tr.camp{background:var(--leaf);padding-inline:.75rem;border-radius:8px;border-bottom:0;margin-bottom:3px}
   .body tr.camp td,.body tr.camp td:first-child,.body tr.camp td:last-child{padding:0;background:none;border-radius:0}
   tbody tr:not(.camp):hover td{background:none}
 }
