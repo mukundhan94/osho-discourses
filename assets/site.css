@@ -89,7 +89,8 @@ footer h2{font-size:clamp(2rem,3.6vw,2.8rem);line-height:1;margin-bottom:1rem;co
 .tnum{flex:none;width:2.3rem;height:2.3rem;border-radius:50%;background:var(--tone);color:#fff;display:grid;place-items:center;font:400 1.3rem/1 var(--display);box-shadow:0 0 0 3px var(--turmeric)}
 .ticon{display:block;margin:0 auto .1rem;width:2.2rem;height:2.2rem;fill:none;stroke:var(--tone);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;position:relative}
 .tcard h3{display:flex;align-items:center;justify-content:center;gap:.75rem;font:400 1.55rem/1.15 var(--display);color:var(--tone);margin:.5rem 0 .8rem;position:relative}
-.tcard p{font-size:.98rem;line-height:1.5;margin:0;position:relative}
+.tcard p{font-size:1rem;line-height:1.5;margin:0;position:relative}
+.tcard p + p{margin-top:.55rem}
 .tcard h3 > span:last-child{flex:0 1 auto;min-width:0}
 .tnav{display:flex;justify-content:space-between;align-items:center;margin-top:.9rem}
 .tnav[hidden]{display:none}

@@ -509,17 +509,21 @@ def asset_version(name):
 
 
 TOUR = [
-    ("row", "indigo", "Each row is a series",
-     "When, what, where, and how many talks. <b>Heavy type</b> is a titled series; plain type is talks without a title, named here by town. "
-     "Many early titles are later books that gather talks from several towns. Where a year mixes Hindi and English, a tag says which."),
-    ("camp", "leaf", "Green means a camp",
-     "A meditation camp, like the first one at Ranakpur in June 1964. Camps show as green diamonds on the maps too."),
-    ("count", "madder", "Counts come from the wiki",
-     "14 talks in this row, <b>of 15</b> in the whole series. Counts are rows on the Sannyas Wiki, not checked totals; "
-     "\u201cat least\u201d and \u201cabout\u201d are the wiki's own words. A dashed ring means the wiki is unsure of a date, place or count."),
-    ("links", "turmeric", "Links go elsewhere",
-     '<b>Listen</b> opens free MP3s on OshoWorld, <b>Video</b> a YouTube search, <b>Wiki</b> the series page. '
-     'Official recordings are published at <a href="https://www.osho.com/" rel="noopener">osho.com</a>. Nothing is hosted or sold here.'),
+    ("row", "indigo", "Each row is a series", [
+        "When, where, and how many talks. <b>Bold titles</b> are named series, and plain ones are talks named by town.",
+        "Some titles are later books that gather talks from several places. Where a year has both Hindi and English, a tag says which.",
+    ]),
+    ("camp", "leaf", "Green means a camp", [
+        "Green rows are meditation camps, like the first one at Ranakpur in June 1964. On the maps, camps are green diamonds.",
+    ]),
+    ("count", "madder", "Counts come from the wiki", [
+        "14 talks here, <b>15</b> in the whole series. The numbers count rows on the Sannyas Wiki, so they are a guide, not a checked total.",
+        "A dashed ring means the wiki is unsure of a date, place or count.",
+    ]),
+    ("links", "turmeric", "Links go elsewhere", [
+        "<b>Listen</b> plays free MP3s on OshoWorld. <b>Video</b> searches YouTube, and <b>Wiki</b> opens the series page.",
+        'Official recordings are at <a href="https://www.osho.com/" rel="noopener">osho.com</a>. Nothing is hosted or sold here.',
+    ]),
 ]
 
 TOUR_ICONS = {
@@ -534,7 +538,7 @@ def tour_html(sample_rows):
     cards = "".join(
         f'<li class="tcard t-{tone}" data-focus="{focus}" id="tour-{n}">'
         f'<svg class="ticon" viewBox="0 0 24 24" aria-hidden="true">{TOUR_ICONS[focus]}</svg>'
-        f'<h3><span class="tnum" aria-hidden="true">{n}</span><span>{e(head)}</span></h3><p>{text}</p></li>'
+        f'<h3><span class="tnum" aria-hidden="true">{n}</span><span>{e(head)}</span></h3>{"".join(f"<p>{t}</p>" for t in text)}</li>'
         for n, (focus, tone, head, text) in enumerate(TOUR, 1)
     )
     return f"""<div class="tour" data-tour>
@@ -605,7 +609,7 @@ def page(years, sections, grand, outlines, tour):
 <section class="reading" aria-labelledby="h-reading">
   <h2 id="h-reading" class="vh">How to read this page</h2>
   <p class="lead">A free, non-commercial library of when and where Osho spoke.
-  <small>Nothing here is for sale, and nothing is hosted here. Every recording link goes to someone else's site.</small></p>
+  <small>Nothing here is for sale. Recordings are linked, never stored here.</small></p>
   {tour}
 </section>
 {''.join(sections)}
