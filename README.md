@@ -87,5 +87,5 @@ A year whose towns all lie in central and northern India gets an India map. Any 
 
 - Photographs: Wikimedia Commons contributors, each under a Creative Commons licence. See [assets/img/CREDITS.md](assets/img/CREDITS.md).
 - Map outline: [Natural Earth](https://www.naturalearthdata.com/), public domain.
-- Fonts: [Teko](https://fonts.google.com/specimen/Teko) and [Mukta](https://fonts.google.com/specimen/Mukta), SIL Open Font License 1.1.
+- Fonts: [Yatra One](https://fonts.google.com/specimen/Yatra+One) and [Hind](https://fonts.google.com/specimen/Hind), SIL Open Font License 1.1.
 - No licence has been chosen yet for the code and the compiled data in this repo.

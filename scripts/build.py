@@ -206,15 +206,6 @@ UNSURE = (
     '<circle cx="8" cy="8" r="6"/></svg>'
 )
 
-# Maps photograph luminance onto the two printing colours: ink #2B1238 to paper #D9E8C8.
-DUOTONE = (
-    '<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false"><filter id="duotone" color-interpolation-filters="sRGB">'
-    '<feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0"/>'
-    '<feComponentTransfer><feFuncR type="table" tableValues="0.169 0.851"/><feFuncG type="table" tableValues="0.071 0.910"/>'
-    '<feFuncB type="table" tableValues="0.220 0.784"/></feComponentTransfer></filter></svg>'
-)
-
-
 def unit_for(talks):
     n = talk_number(talks)
     if n is None:
@@ -228,7 +219,7 @@ def row_html(r, show_lang):
     if label and label.split()[-1].lower().rstrip("s") not in (r["title"] + " " + note).lower():
         note = f"{label}. {note}" if note else label
     note_html = f'<span class="note">{e(note)}</span>' if note else ""
-    lang = f' <span class="lang">{LANGS[r["lang"]]}</span>' if show_lang and r["lang"] else ""
+    lang = f' <span class="lang" data-l="{r["lang"]}">{LANGS[r["lang"]]}</span>' if show_lang and r["lang"] else ""
     mark = UNSURE if r["unsure"] else ""
     head, _, last = r["title"].rpartition(" ")
     title_html = (e(head + " ") if head else "") + f'<span class="keep">{e(last)}{lang}</span>' if lang else e(r["title"])
@@ -320,14 +311,13 @@ def page(years, sections, grand):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Osho: the talks, {span}</title>
 <meta name="description" content="A chronology of Osho's talks from {span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.">
-<link rel="preload" href="assets/fonts/teko-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/yatra-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-{DUOTONE}
 <a class="skip" href="#main">Skip to the chronology</a>
 <header class="mast">
-  <h1>Osho: the talks<br>{span}</h1>
+  <h1>Osho: the talks<br><span>{span}</span></h1>
   <p>Every known talk in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
 </header>
 <nav class="years" aria-label="Years">{nav}<a href="#sources">Sources</a></nav>
@@ -342,7 +332,7 @@ def page(years, sections, grand):
   </ul>
   <ul class="legend" aria-label="Marks used in the tables">
     <li><b>Heavier type</b> is a titled series</li>
-    <li><span class="swatch">Inked row</span> is a meditation camp</li>
+    <li><span class="swatch">Green row</span> is a meditation camp</li>
     <li>{UNSURE} date, place or count marked uncertain in the source</li>
   </ul>
 </section>
@@ -356,7 +346,7 @@ def page(years, sections, grand):
     </div>
     <div>
       <p>Compiled in November 2026. Each year links to its wiki page under its table. The wiki is the authority for every row. Where this page and the wiki differ, the wiki is right and this page needs correcting.</p>
-      <p>Map outlines are from Natural Earth (public domain). Positions are approximate. Photographs are credited beside each one. All are recent and reused under Creative Commons licences, except the 1983 photograph of Rajneeshpuram, which its photographer releases for any use with attribution. Type is Teko and Mukta, both under the SIL Open Font License.</p>
+      <p>Map outlines are from Natural Earth (public domain). Positions are approximate. Photographs are credited beside each one. All are recent and reused under Creative Commons licences, except the 1983 photograph of Rajneeshpuram, which its photographer releases for any use with attribution. Type is Yatra One and Hind, both under the SIL Open Font License.</p>
     </div>
   </div>
 </footer>

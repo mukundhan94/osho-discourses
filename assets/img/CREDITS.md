@@ -1,6 +1,6 @@
 # Photograph credits
 
-All photographs are recent, not from the period, except `rajneeshpuram.webp` (summer 1983). Each was downloaded from Wikimedia Commons at 1600px wide, resized to 1400px and converted to WebP. The page prints them as two-colour duotones (an SVG filter, the files themselves are unchanged colour images). Files under a ShareAlike licence remain under that licence here.
+All photographs are recent, not from the period, except `rajneeshpuram.webp` (summer 1983). Each was downloaded from Wikimedia Commons at 1600px wide, resized to 1400px and converted to WebP. The page shows them in colour. Files under a ShareAlike licence remain under that licence here.
 
 | File | Subject | Author | Licence | Source |
 |---|---|---|---|---|
