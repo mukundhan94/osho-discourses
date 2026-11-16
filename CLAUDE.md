@@ -1,4 +1,4 @@
-# Osho: the talks
+# Osho: the discourses
 
 A static site listing Osho's talks by year, 1954 to 1990, with links out to recordings. Live at https://oshodiscourses.com/.
 

@@ -1,6 +1,6 @@
-# Osho: the talks
+# Osho: the discourses
 
-Every talk Osho gave from 1954 to 1990, year by year: the series, the dates, the place and how many talks.
+Every discourse Osho gave from 1954 to 1990, year by year: the series, the dates, the place and how many talks.
 
 **Read it here:** https://oshodiscourses.com/
 

@@ -1,5 +1,5 @@
 ---
-name: "Osho: the talks, 1954 to 1990"
+name: "Osho: the discourses, 1954 to 1990"
 description: A one-page chronology of talks, printed like a block-printed cotton cloth.
 colors:
   indigo: "#1F3A6B"
@@ -119,7 +119,7 @@ components:
     textColor: "{colors.cloth}"
 ---
 
-# Design System: Osho: the talks, 1954 to 1990
+# Design System: Osho: the discourses, 1954 to 1990
 
 This file describes the page as built. The source of truth is `assets/site.css` (tokens are custom properties on `:root`), `assets/site.js` and the markup written by `scripts/build.py`. If this file and the stylesheet disagree, the stylesheet is right and this file needs correcting.
 

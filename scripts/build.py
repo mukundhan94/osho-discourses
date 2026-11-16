@@ -389,7 +389,7 @@ def year_html(year, rows, places, outlines, media, links):
       {photo}
     </div>
     <table>
-      <caption>Talks, {e(year['label'])}, in date order</caption>
+      <caption>Discourses, {e(year['label'])}, in date order</caption>
       <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
       <tbody>{''.join(row_html(r, show_lang, media, links) for r in rows)}</tbody>
     </table>
@@ -409,12 +409,12 @@ def page(years, sections, grand):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Osho: the talks, {span}</title>
-<meta name="description" content="A chronology of Osho's talks from {span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.">
+<title>Osho: the discourses, {span}</title>
+<meta name="description" content="A chronology of Osho's discourses from {span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.">
 <link rel="canonical" href="{SITE}">
 <meta property="og:url" content="{SITE}">
-<meta property="og:title" content="Osho: the talks, {span}">
-<meta property="og:description" content="Every talk listed on the Sannyas Wiki, in date order: the series, the place and the number of talks.">
+<meta property="og:title" content="Osho: the discourses, {span}">
+<meta property="og:description" content="Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#1F3A6B">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F3A6B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23E9A21A'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23C2281D'/%3E%3C/svg%3E">
@@ -429,8 +429,8 @@ def page(years, sections, grand):
 </svg>
 <a class="skip" href="#main">Skip to the chronology</a>
 <header class="mast">
-  <h1>Osho: the talks<br><span>{span}</span></h1>
-  <p>Every talk listed on the Sannyas Wiki, in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
+  <h1>Osho: the discourses<br><span>{span}</span></h1>
+  <p>Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
 </header>
 <nav class="years" aria-label="Years">{nav}<a href="#sources">Sources</a></nav>
 <main id="main">
