@@ -28,10 +28,10 @@ Read on a laptop or phone, at leisure, usually from a shared link to the GitHub 
 - Talks are in Hindi or English; rows carry a language tag where a year mixes both.
 
 ## Brand Commitments
-None. No ashram, foundation or publisher branding; this is an independent reference. No em-dashes in copy.
+No ashram, foundation or publisher branding; this is an independent reference. No photographs of Osho, and no photograph whose subject is an identifiable private person. No em-dashes in copy. The visual system is in DESIGN.md.
 
 ## Evidence on Hand
-The per-year series tables gathered on 2026-11-16 (in the session), with source URLs.
+The year files in data/talks/, compiled on 2026-11-16 and compared with the raw wiki pages by scripts/wiki_check.py.
 
 ## Product Principles
 - Uncertainty stays attached to the row it belongs to.
