@@ -1,6 +1,6 @@
 # Photograph credits
 
-All photographs are recent, not from the period, except `rajneeshpuram.webp` (summer 1983). Each was downloaded from Wikimedia Commons at 1600px wide, resized to 1400px and converted to WebP. The page shows them in colour. Files under a ShareAlike licence remain under that licence here.
+All photographs are recent, not from the period, except `rajneeshpuram.webp` (summer 1983). Each was downloaded from Wikimedia Commons at 1600px wide, resized to 800px wide and converted to WebP. The page shows them in colour. Files under a ShareAlike licence remain under that licence here.
 
 | File | Subject | Author | Licence | Source |
 |---|---|---|---|---|
