@@ -125,4 +125,7 @@ The link to the year's wiki page is derived from the `id`.
   - The 1983 photograph of Rajneeshpuram is released by its photographer for any use with attribution.
 - **Map outlines:** [Natural Earth](https://www.naturalearthdata.com/), public domain.
 - **Fonts:** [Yatra One](https://fonts.google.com/specimen/Yatra+One) and [Hind](https://fonts.google.com/specimen/Hind), SIL Open Font License 1.1.
-- **Code and compiled data:** no licence has been chosen yet.
+- **Code:** MIT, see [LICENSE](LICENSE). This covers `scripts/`, `assets/site.css`, `assets/site.js` and `.github/`.
+- **Compiled data in `data/`:** no licence has been chosen yet.
+  - The source wiki states its content is under [CC BY-NC-ND 4.0](https://www.sannyas.wiki/index.php?title=CC_BY-NC-ND_4.0_and_Fair_Use).
+  - An older page on the same wiki says [GNU Free Documentation License 1.3](https://www.sannyas.wiki/index.php?title=The_Sannyas_Wiki:Copyrights).
