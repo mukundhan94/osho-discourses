@@ -533,9 +533,8 @@ TOUR_ICONS = {
 def tour_html(sample_rows):
     cards = "".join(
         f'<li class="tcard t-{tone}" data-focus="{focus}" id="tour-{n}">'
-        f'<span class="tnum" aria-hidden="true">{n}</span>'
         f'<svg class="ticon" viewBox="0 0 24 24" aria-hidden="true">{TOUR_ICONS[focus]}</svg>'
-        f'<h3>{e(head)}</h3><p>{text}</p></li>'
+        f'<h3><span class="tnum" aria-hidden="true">{n}</span><span>{e(head)}</span></h3><p>{text}</p></li>'
         for n, (focus, tone, head, text) in enumerate(TOUR, 1)
     )
     return f"""<div class="tour" data-tour>
