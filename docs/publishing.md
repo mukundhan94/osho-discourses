@@ -10,6 +10,8 @@ The site is a folder of static files. `make build` writes it to `_site/`, which 
 
 `www.oshodiscourses.com` redirects to the address above (a permanent redirect set on the domain in Vercel). GitHub Pages is turned off.
 
+The stylesheet and script links carry a short content hash (`site.css?v=...`), so a change is never hidden by a cached copy.
+
 `vercel.json` tells Vercel to run `python3 scripts/build.py` and serve `_site`.
 
 The canonical address is set in `scripts/build.py` as `SITE`.

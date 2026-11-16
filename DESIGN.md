@@ -268,6 +268,7 @@ Colour photograph, `object-fit: cover`, in the arch with a 6px indigo border and
 - **Month strip:** replaces the map in a year with one place. Twelve madder bars, height by listed talks per month, in the arched frame.
 - **Route:** where a year sets `route`, a dashed madder line joins its places in the order he spoke there (1986).
 - **Closing:** where a year sets `closing`, its table is replaced by dates in madder display type, each followed by one line. Used for 1990.
+- **Series search:** a pill input in the masthead under the standfirst, turmeric ring on indigo. Results drop down in a cotton panel with an indigo border, up to 12, each the title in indigo bold over the year and dates. Choosing one jumps straight to the row (no smooth scroll) and tints it gold. Hidden when JavaScript is off.
 - **Decade labels:** small madder display-face labels (60s, 70s, 80s, 90s) in the year band; not links.
 
 ### Links and focus
