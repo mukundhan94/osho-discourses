@@ -102,6 +102,21 @@ footer h2{font-size:clamp(2rem,3.6vw,2.8rem);line-height:1;margin-bottom:1rem;co
 .photo .credit{display:block}
 .source{margin-top:.9rem}
 .keep{white-space:nowrap}
+.sprite{position:absolute}
+
+/* Listen, watch and talk-list links under a series title */
+.media{display:flex;flex-wrap:wrap;gap:.35rem .4rem;align-items:center;margin-top:.45rem}
+.chip{display:inline-flex;align-items:center;gap:.4em;font:600 .8rem/1 var(--text);padding:.45em .8em .38em;border-radius:999px;text-decoration:none;border:2px solid var(--indigo);color:var(--indigo);transition:background-color .2s cubic-bezier(.16,1,.3,1),color .2s cubic-bezier(.16,1,.3,1)}
+.chip svg{width:1em;height:1em;fill:currentColor;flex:none}
+.chip.listen{background:var(--indigo);color:var(--cloth)}
+.chip.watch{background:var(--madder);border-color:var(--madder);color:#fff}
+.chip:hover{background:var(--turmeric);border-color:var(--turmeric);color:var(--ink)}
+.media .meta{font-size:.82rem;color:var(--ink-soft);flex-basis:100%}
+tr.camp .chip{border-color:#fff;color:#fff}
+tr.camp .chip.listen{background:#fff;color:var(--leaf)}
+tr.camp .chip.watch{background:var(--cloth);border-color:var(--cloth);color:var(--madder)}
+tr.camp .chip:hover{background:var(--turmeric);border-color:var(--turmeric);color:var(--ink)}
+tr.camp .media .meta{color:#fff}
 
 /* Tables */
 table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
@@ -192,7 +207,7 @@ footer p{max-width:60ch;margin-bottom:.9rem}
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  .stud,.years a{transition:none}
+  .stud,.years a,.chip{transition:none}
 }
 @media print{
   .years,.skip,.year::before,.mast::after,footer::before{display:none}

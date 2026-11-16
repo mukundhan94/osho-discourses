@@ -9,7 +9,12 @@ import json
 import math
 import re
 import shutil
+import sys
+import urllib.parse
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from wiki_check import norm  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
@@ -62,6 +67,59 @@ def load_rows(year_id, places):
             if t not in places:
                 raise SystemExit(f"{path.name}:{n}: town {t!r} is not in places.csv")
     return sorted(rows, key=lambda r: r["sort"])
+
+
+def load_media():
+    """Links and counts per series from data/media.csv, keyed by normalised wiki title."""
+    path = DATA / "media.csv"
+    if not path.exists():
+        return {}
+    with open(path, newline="", encoding="utf-8") as f:
+        return {r["key"]: r for r in csv.DictReader(f)}
+
+
+def media_for(title, media):
+    key = norm(title)
+    hit = max((k for k in media if key == k or key.startswith(k + " ")), key=len, default=None)
+    return media.get(hit)
+
+
+def icon(name):
+    return f'<svg aria-hidden="true"><use href="#i-{name}"/></svg>'
+
+
+def media_html(title, media, row_talks):
+    m = media_for(title, media)
+    if not m or not (m["wiki_url"] or m["listen_url"]):
+        return ""
+    chips = []
+    if m["listen_url"]:
+        chips.append(f'<a class="chip listen" href="{e(m["listen_url"])}" rel="noopener">{icon("listen")}Listen on OshoWorld</a>')
+    video = int(m["video"] or 0)
+    if video:
+        query = urllib.parse.quote_plus("Osho " + re.sub(r"\s*\(.*?\)", "", m["wiki_title"]))
+        chips.append(f'<a class="chip watch" href="https://www.youtube.com/results?search_query={query}" rel="noopener">{icon("watch")}Search YouTube</a>')
+    if m["wiki_url"]:
+        listed = int(m["talks"] or 0)
+        label = "First talk on the wiki" if "~" in m["wiki_title"] else ("Talk list on the wiki" if listed > 1 else "Series on the wiki")
+        chips.append(f'<a class="chip" href="{e(m["wiki_url"])}" rel="noopener">{icon("list")}{label}</a>')
+    meta = ""
+    talks = int(m["talks"] or 0)
+    # Only describe the series when the wiki's list is at least as long as this row.
+    if talks > 1 and talks >= (row_talks or 0):
+        audio = int(m["audio"] or 0)
+        parts = [f"{talks} talk{'s' if talks != 1 else ''}"]
+        if video == talks:
+            parts.append("video exists for all")
+        elif video:
+            parts.append(f"video exists for {video}")
+        elif audio:
+            parts.append("audio exists for all" if audio == talks else f"audio exists for {audio}")
+        hours = round(int(m["minutes"] or 0) / 60)
+        if hours:
+            parts.append(f"about {hours} hour{'s' if hours != 1 else ''}")
+        meta = f'<span class="meta">Whole series on the wiki: {", ".join(parts)}</span>'
+    return f'<div class="media">{"".join(chips)}{meta}</div>'
 
 
 def check_photo(year):
@@ -222,7 +280,7 @@ def unit_for(talks):
     return "talk" if n == 1 else "talks"
 
 
-def row_html(r, show_lang):
+def row_html(r, show_lang, media):
     note = r["note"].strip()
     label = KIND_LABEL.get(r["kind"])
     if label and label.split()[-1].lower().rstrip("s") not in (r["title"] + " " + note).lower():
@@ -237,7 +295,7 @@ def row_html(r, show_lang):
     return (
         f'<tr class="{r["kind"]}">'
         f'<td class="dates">{e(r["dates"])}{mark}</td>'
-        f'<td class="what"><span class="title">{title_html}</span>{note_html}</td>'
+        f'<td class="what"><span class="title">{title_html}</span>{note_html}{media_html(r["title"], media, talk_number(r["talks"]))}</td>'
         f'<td class="place">{e(r["place"])}</td>'
         f'<td class="talks" data-unit="{unit_for(r["talks"])}">{e(r["talks"])}</td></tr>'
     )
@@ -273,7 +331,7 @@ def photo_html(p):
     )
 
 
-def year_html(year, rows, places, outlines):
+def year_html(year, rows, places, outlines, media):
     summary, show_lang = summary_for(rows)
     _, _, ranked = town_weights(rows)
     towns_line = " · ".join(ranked[:4])
@@ -302,7 +360,7 @@ def year_html(year, rows, places, outlines):
     <table>
       <caption>Talks, {e(year['label'])}, in date order</caption>
       <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
-      <tbody>{''.join(row_html(r, show_lang) for r in rows)}</tbody>
+      <tbody>{''.join(row_html(r, show_lang, media) for r in rows)}</tbody>
     </table>
     <p class="source">Source: <a href="{e(year['source'])}">Sannyas Wiki, Osho Timeline, {e(year['label'])}</a></p>
   </div>
@@ -331,6 +389,11 @@ def page(years, sections, grand):
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+<symbol id="i-listen" viewBox="0 0 16 16"><path d="M8 1a6 6 0 0 0-6 6v5a2 2 0 0 0 2 2h1V8H3.5V7a4.5 4.5 0 0 1 9 0v1H11v6h1a2 2 0 0 0 2-2V7a6 6 0 0 0-6-6z"/></symbol>
+<symbol id="i-watch" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></symbol>
+</svg>
 <a class="skip" href="#main">Skip to the chronology</a>
 <header class="mast">
   <h1>Osho: the talks<br><span>{span}</span></h1>
@@ -345,6 +408,7 @@ def page(years, sections, grand):
     <li>Many early titles are later book compilations of talks given in different towns, so one series can span months and cities.</li>
     <li>Whether a tape survives was not checked for any row.</li>
     <li>Titles are romanised as on the wiki. Where a year mixes Hindi and English, each row says which.</li>
+    <li>This site hosts no recordings. Listen links go to <a href="https://oshoworld.com/audio" rel="noopener">OshoWorld</a>, talk lists to the Sannyas Wiki, and video links to a YouTube search. OSHO International publishes the official recordings at <a href="https://www.osho.com/" rel="noopener">osho.com</a> and on its <a href="https://www.youtube.com/oshointernational" rel="noopener">YouTube channel</a>.</li>
   </ul>
   <ul class="legend" aria-label="Marks used in the tables">
     <li><b>Heavier type</b> is a titled series</li>
@@ -374,6 +438,7 @@ def page(years, sections, grand):
 
 def main():
     places = load_places()
+    media = load_media()
     years = json.loads((DATA / "years.json").read_text(encoding="utf-8"))
     outlines = {
         "india": json.loads((DATA / "india-outline.json").read_text(encoding="utf-8"))["ring"],
@@ -390,7 +455,7 @@ def main():
         if not rows:
             raise SystemExit(f"{y['id']}: no rows")
         all_rows += rows
-        sections.append(year_html(y, rows, places, outlines))
+        sections.append(year_html(y, rows, places, outlines, media))
     grand = {"rows": len(all_rows), "towns": len({t for r in all_rows for t in r["town_list"]})}
     if OUT.exists():
         shutil.rmtree(OUT)
