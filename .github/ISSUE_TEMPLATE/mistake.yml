@@ -1,0 +1,24 @@
+name: Report a mistake
+description: A wrong date, place, title or talk count
+labels: [data]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Which year and series?
+      placeholder: "1975, Tao The Three Treasures Vol 2"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong, and what should it say?
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Where can this be checked?
+      description: A link to the Sannyas Wiki page or another source.
+    validations:
+      required: true
