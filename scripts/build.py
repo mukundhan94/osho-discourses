@@ -29,6 +29,11 @@ COLUMNS = ["sort", "dates", "title", "place", "towns", "talks", "kind", "unsure"
 MAP_W, MAP_H = 265.0, 234.0
 INDIA = (68.0, 90.0, 15.5, 33.0)  # lon0, lon1, lat0, lat1
 
+SITE = "https://oshodiscourses.com/"
+REPO = "https://github.com/mukundhan94/osho-discourses"
+NOTICE = ("This is a non-commercial reference library: it collects what was spoken, when and where, "
+          "and links to recordings hosted by others. Nothing here is for sale, and the site carries no advertising.")
+LINK_KINDS = {"listen": "listen", "watch": "watch", "read": "list"}
 WIKI = "https://www.sannyas.wiki/index.php?title=Osho_Timeline"
 SOURCES = [
     ("Sannyas Wiki, Osho Timeline (index of year pages)", WIKI),
@@ -78,6 +83,27 @@ def load_media():
         return {r["key"]: r for r in csv.DictReader(f)}
 
 
+def load_links():
+    """Hand-added links from data/links.csv, grouped by normalised series title."""
+    path = DATA / "links.csv"
+    out = {}
+    if not path.exists():
+        return out
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        if reader.fieldnames != ["title", "kind", "label", "url"]:
+            raise SystemExit("links.csv: header must be title,kind,label,url")
+        for n, r in enumerate(reader, start=2):
+            if not r["title"].strip() or not r["label"].strip():
+                raise SystemExit(f"links.csv:{n}: title and label are required")
+            if r["kind"] not in LINK_KINDS:
+                raise SystemExit(f"links.csv:{n}: kind must be one of {sorted(LINK_KINDS)}")
+            if not r["url"].startswith("https://"):
+                raise SystemExit(f"links.csv:{n}: url must start with https://")
+            out.setdefault(norm(r["title"]), []).append(r)
+    return out
+
+
 def media_for(title, media):
     key = norm(title)
     hit = max((k for k in media if key == k or key.startswith(k + " ")), key=len, default=None)
@@ -88,9 +114,11 @@ def icon(name):
     return f'<svg aria-hidden="true"><use href="#i-{name}"/></svg>'
 
 
-def media_html(title, media, row_talks):
-    m = media_for(title, media)
-    if not m or not (m["wiki_url"] or m["listen_url"]):
+def media_html(title, media, row_talks, links):
+    m = media_for(title, media) or {"wiki_url": "", "listen_url": "", "video": "", "talks": "", "wiki_title": ""}
+    key = norm(title)
+    extra = links.get(max((k for k in links if key == k or key.startswith(k + " ")), key=len, default=None), [])
+    if not (m["wiki_url"] or m["listen_url"] or extra):
         return ""
     chips = []
     if m["listen_url"]:
@@ -103,6 +131,9 @@ def media_html(title, media, row_talks):
         listed = int(m["talks"] or 0)
         label = "First talk on the wiki" if "~" in m["wiki_title"] else ("Talk list on the wiki" if listed > 1 else "Series on the wiki")
         chips.append(f'<a class="chip" href="{e(m["wiki_url"])}" rel="noopener">{icon("list")}{label}</a>')
+    for x in extra:
+        cls = "" if x["kind"] == "read" else " " + x["kind"]
+        chips.append(f'<a class="chip{cls}" href="{e(x["url"])}" rel="noopener">{icon(LINK_KINDS[x["kind"]])}{e(x["label"])}</a>')
     meta = ""
     talks = int(m["talks"] or 0)
     # Only describe the series when the wiki's list is at least as long as this row.
@@ -280,7 +311,7 @@ def unit_for(talks):
     return "talk" if n == 1 else "talks"
 
 
-def row_html(r, show_lang, media):
+def row_html(r, show_lang, media, links):
     note = r["note"].strip()
     label = KIND_LABEL.get(r["kind"])
     if label and label.split()[-1].lower().rstrip("s") not in (r["title"] + " " + note).lower():
@@ -295,7 +326,7 @@ def row_html(r, show_lang, media):
     return (
         f'<tr class="{r["kind"]}">'
         f'<td class="dates">{e(r["dates"])}{mark}</td>'
-        f'<td class="what"><span class="title">{title_html}</span>{note_html}{media_html(r["title"], media, talk_number(r["talks"]))}</td>'
+        f'<td class="what"><span class="title">{title_html}</span>{note_html}{media_html(r["title"], media, talk_number(r["talks"]), links)}</td>'
         f'<td class="place">{e(r["place"])}</td>'
         f'<td class="talks" data-unit="{unit_for(r["talks"])}">{e(r["talks"])}</td></tr>'
     )
@@ -331,7 +362,7 @@ def photo_html(p):
     )
 
 
-def year_html(year, rows, places, outlines, media):
+def year_html(year, rows, places, outlines, media, links):
     summary, show_lang = summary_for(rows)
     _, _, ranked = town_weights(rows)
     towns_line = " · ".join(ranked[:4])
@@ -360,7 +391,7 @@ def year_html(year, rows, places, outlines, media):
     <table>
       <caption>Talks, {e(year['label'])}, in date order</caption>
       <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
-      <tbody>{''.join(row_html(r, show_lang, media) for r in rows)}</tbody>
+      <tbody>{''.join(row_html(r, show_lang, media, links) for r in rows)}</tbody>
     </table>
     <p class="source">Source: <a href="{e(year['source'])}">Sannyas Wiki, Osho Timeline, {e(year['label'])}</a></p>
   </div>
@@ -380,6 +411,8 @@ def page(years, sections, grand):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Osho: the talks, {span}</title>
 <meta name="description" content="A chronology of Osho's talks from {span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.">
+<link rel="canonical" href="{SITE}">
+<meta property="og:url" content="{SITE}">
 <meta property="og:title" content="Osho: the talks, {span}">
 <meta property="og:description" content="Every talk listed on the Sannyas Wiki, in date order: the series, the place and the number of talks.">
 <meta property="og:type" content="website">
@@ -403,6 +436,7 @@ def page(years, sections, grand):
 <main id="main">
 <section class="reading" aria-labelledby="h-reading">
   <h2 id="h-reading">How to read this</h2>
+  <p class="notice">{NOTICE}</p>
   <ul class="caveats">
     <li>Counts are rows on the Sannyas Wiki, not verified totals. "At least" and "about" are the source's own words.</li>
     <li>Many early titles are later book compilations of talks given in different towns, so one series can span months and cities.</li>
@@ -426,6 +460,8 @@ def page(years, sections, grand):
     </div>
     <div>
       <p>Compiled in November 2026. Each year links to its wiki page under its table. The wiki is the authority for every row. Where this page and the wiki differ, the wiki is right and this page needs correcting.</p>
+      <p>{NOTICE}</p>
+      <p>The site is open source. <a href="{REPO}">See the code and data on GitHub</a>, <a href="{REPO}/issues/new/choose">suggest a correction or a link</a>, or read <a href="{REPO}/blob/main/CONTRIBUTING.md">how to contribute</a>.</p>
       <p>Map outlines are from Natural Earth (public domain). Positions are approximate. Photographs are credited beside each one. All are recent and reused under Creative Commons licences, except the 1983 photograph of Rajneeshpuram, which its photographer releases for any use with attribution. Type is Yatra One and Hind, both under the SIL Open Font License.</p>
     </div>
   </div>
@@ -439,6 +475,7 @@ def page(years, sections, grand):
 def main():
     places = load_places()
     media = load_media()
+    links = load_links()
     years = json.loads((DATA / "years.json").read_text(encoding="utf-8"))
     outlines = {
         "india": json.loads((DATA / "india-outline.json").read_text(encoding="utf-8"))["ring"],
@@ -455,7 +492,11 @@ def main():
         if not rows:
             raise SystemExit(f"{y['id']}: no rows")
         all_rows += rows
-        sections.append(year_html(y, rows, places, outlines, media))
+        sections.append(year_html(y, rows, places, outlines, media, links))
+    row_keys = [norm(r["title"]) for r in all_rows]
+    for key, items in links.items():
+        if not any(k == key or k.startswith(key + " ") for k in row_keys):
+            raise SystemExit(f"links.csv: no series is titled {items[0]['title']!r}")
     grand = {"rows": len(all_rows), "towns": len({t for r in all_rows for t in r["town_list"]})}
     if OUT.exists():
         shutil.rmtree(OUT)

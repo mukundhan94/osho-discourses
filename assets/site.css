@@ -56,8 +56,10 @@ p{margin:0}
 /* Reading notes */
 .reading,.year,footer{padding-inline:var(--gutter)}
 .reading{padding-block:1.2rem 1.1rem;display:grid;grid-template-columns:minmax(11rem,15rem) minmax(0,1fr);gap:.4rem 2.5rem;align-items:start}
-.reading h2{font-size:clamp(1.7rem,2.6vw,2.2rem);line-height:1.05;color:var(--indigo);grid-row:1 / span 2}
+.reading h2{font-size:clamp(1.7rem,2.6vw,2.2rem);line-height:1.05;color:var(--indigo);grid-row:1 / span 3}
+.reading > :not(h2){grid-column:2}
 footer h2{font-size:clamp(2rem,3.6vw,2.8rem);line-height:1;margin-bottom:1rem;color:var(--turmeric)}
+.notice{font-weight:600;color:var(--indigo);max-width:78ch;margin-bottom:.5rem}
 .caveats{margin:0;padding-left:1.1rem;columns:2;column-gap:2.6rem;font-size:.93rem;line-height:1.4}
 .caveats li{margin-bottom:.25rem;padding-left:.2rem;break-inside:avoid}
 .caveats li::marker{color:var(--madder)}
@@ -174,6 +176,7 @@ footer p{max-width:60ch;margin-bottom:.9rem}
   .cols{grid-template-columns:1fr}
   .reading{grid-template-columns:1fr}
   .reading h2{grid-row:auto}
+  .reading > :not(h2){grid-column:auto}
   .caveats{columns:1}
   .year{grid-template-columns:1fr}
   .rail{border-right:0;border-bottom:3px dotted var(--indigo);padding:1.6rem 0 1.6rem;container-type:normal}
