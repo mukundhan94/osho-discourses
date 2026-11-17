@@ -637,71 +637,61 @@ def json_ld(years):
     return '<script type="application/ld+json">' + text.replace("<", "\\u003c") + "</script>"
 
 
-def page(years, sections, grand, outlines, tour):
-    span = f"{years[0]['numeral']} to {years[-1]['numeral']}"
+def year_band(years, href, current=None, last=""):
+    """The row of year pills. `href` gives each year's address; `current` marks the page being read."""
     nav, decade = [], None
     for y in years:
         d = y["id"][:3] if y["id"].isdigit() else None
         if d and d != decade and decade is not None or (d and decade is None and y is not years[0]):
             nav.append(f'<span class="decade" aria-hidden="true">{d[2]}0s</span>')
         decade = d or decade
-        nav.append(f'<a href="#y-{e(y["id"])}" aria-label="{e(y["label"])}">{e(y["nav"])}</a>')
-    nav = "".join(nav)
-    sources = "".join(f'<li><a href="{e(u)}">{e(t)}</a></li>' for t, u in SOURCES)
-    return f"""<!doctype html>
-<html lang="en">
-<head>
+        here = ' aria-current="page"' if y["id"] == current else ""
+        nav.append(f'<a href="{e(href(y))}" aria-label="{e(y["label"])}"{here}>{e(y["nav"])}</a>')
+    return f'<nav class="years" aria-label="Years">{"".join(nav)}{last}</nav>'
+
+
+def head_html(title, description, canonical, og_title, og_description, ld, root="", extra_css=()):
+    """The <head> every page shares. `root` is "" on the home page and "/" on pages in folders."""
+    # Escape what a double-quoted attribute needs and leave apostrophes as typed.
+    title, description, og_title, og_description = (
+        html.escape(t, quote=False).replace('"', "&quot;") for t in (title, description, og_title, og_description))
+    css = "".join(f'\n<link rel="stylesheet" href="{root}assets/{name}?v={asset_version(name)}">' for name in extra_css)
+    return f"""<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Osho: the discourses, {span}</title>
-<meta name="description" content="A chronology of Osho's discourses from {span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.">
-<link rel="canonical" href="{SITE}">
-<meta property="og:url" content="{SITE}">
-<meta property="og:title" content="Osho: the discourses, {span}">
-<meta property="og:description" content="Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks.">
+<title>{title}</title>
+<meta name="description" content="{description}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:url" content="{canonical}">
+<meta property="og:title" content="{og_title}">
+<meta property="og:description" content="{og_description}">
 <meta property="og:type" content="website">
 <meta property="og:image" content="{SITE}{OG_IMAGE}?v={asset_version(OG_IMAGE[len('assets/'):])}">
 <meta property="og:image:width" content="{OG_SIZE[0]}">
 <meta property="og:image:height" content="{OG_SIZE[1]}">
 <meta property="og:image:alt" content="{e(OG_IMAGE_ALT)}">
 <meta name="twitter:card" content="summary_large_image">
-{json_ld(years)}
+{ld}
 <meta name="theme-color" content="#1F3A6B">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F3A6B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23E9A21A'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23C2281D'/%3E%3C/svg%3E">
-<link rel="preload" href="assets/fonts/yatra-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/site.css?v={asset_version('site.css')}">
-</head>
-<body>
-<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+<link rel="preload" href="{root}assets/fonts/yatra-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{root}assets/site.css?v={asset_version('site.css')}">{css}
+</head>"""
+
+
+def sprite_html(outlines):
+    return f"""<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
 <defs><path id="o-india" d="{outlines['india_d']}"/><path id="o-world" d="{outlines['world_d']}"/></defs>
 <symbol id="i-listen" viewBox="0 0 16 16"><path d="M8 1a6 6 0 0 0-6 6v5a2 2 0 0 0 2 2h1V8H3.5V7a4.5 4.5 0 0 1 9 0v1H11v6h1a2 2 0 0 0 2-2V7a6 6 0 0 0-6-6z"/></symbol>
 <symbol id="i-watch" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></symbol>
 <symbol id="i-list" viewBox="0 0 16 16"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></symbol>
 </svg>
-<a class="skip" href="#main">Skip to the chronology</a>
-<header class="mast">
-  <h1>Osho: the discourses<br><span>{span}</span></h1>
-  <div class="intro-side">
-  <p>Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
-  <form class="find" role="search" hidden>
-    <label for="find">Find a series</label>
-    <input id="find" type="search" autocomplete="off" spellcheck="false" placeholder="Beyond Psychology, Geeta-Darshan" aria-controls="find-results" aria-describedby="find-count">
-    <p id="find-count" class="find-count" aria-live="polite"></p>
-    <ol id="find-results" class="find-results"></ol>
-  </form>
-  </div>
-</header>
-<nav class="years" aria-label="Years">{nav}<a href="#sources">Sources</a></nav>
-<main id="main">
-<section class="reading" aria-labelledby="h-reading">
-  <h2 id="h-reading" class="vh">How to read this page</h2>
-  <p class="lead">A free, non-commercial library of when and where Osho spoke.
-  <small>Nothing here is for sale. Recordings are linked, never stored here.</small></p>
-  {tour}
-</section>
-{''.join(sections)}
-</main>
-<footer id="sources">
+"""
+
+
+def footer_html():
+    sources = "".join(f'<li><a href="{e(u)}">{e(t)}</a></li>' for t, u in SOURCES)
+    return f"""<footer id="sources">
   <h2>Sources</h2>
   <div class="cols">
     <div>
@@ -715,14 +705,160 @@ def page(years, sections, grand, outlines, tour):
     </div>
   </div>
 </footer>
-<script src="assets/site.js?v={asset_version('site.js')}" defer></script>
-<script>window.va = window.va || function () {{ (window.vaq = window.vaq || []).push(arguments); }};
-window.si = window.si || function () {{ (window.siq = window.siq || []).push(arguments); }};</script>
+"""
+
+
+ANALYTICS = """<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
-</body>
+"""
+
+
+def page(years, sections, grand, outlines, tour):
+    span = f"{years[0]['numeral']} to {years[-1]['numeral']}"
+    band = year_band(years, lambda y: "#y-" + y["id"], last='<a href="#sources">Sources</a>')
+    head = head_html(
+        f"Osho: the discourses, {span}",
+        f"A chronology of Osho's discourses from {span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.",
+        SITE,
+        f"Osho: the discourses, {span}",
+        "Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks.",
+        json_ld(years),
+    )
+    return f"""<!doctype html>
+<html lang="en">
+{head}
+<body>
+{sprite_html(outlines)}<a class="skip" href="#main">Skip to the chronology</a>
+<header class="mast">
+  <h1>Osho: the discourses<br><span>{span}</span></h1>
+  <div class="intro-side">
+  <p>Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks. {grand['rows']} entries across {grand['towns']} places.</p>
+  <form class="find" role="search" hidden>
+    <label for="find">Find a series</label>
+    <input id="find" type="search" autocomplete="off" spellcheck="false" placeholder="Beyond Psychology, Geeta-Darshan" aria-controls="find-results" aria-describedby="find-count">
+    <p id="find-count" class="find-count" aria-live="polite"></p>
+    <ol id="find-results" class="find-results"></ol>
+  </form>
+  </div>
+</header>
+{band}
+<main id="main">
+<section class="reading" aria-labelledby="h-reading">
+  <h2 id="h-reading" class="vh">How to read this page</h2>
+  <p class="lead">A free, non-commercial library of when and where Osho spoke.
+  <small>Nothing here is for sale. Recordings are linked, never stored here.</small></p>
+  {tour}
+</section>
+{''.join(sections)}
+</main>
+{footer_html()}<script src="assets/site.js?v={asset_version('site.js')}" defer></script>
+{ANALYTICS}</body>
 </html>
 """
+
+
+def year_url(year):
+    return f"year/{year['id']}/"
+
+
+def year_title(year):
+    """Page title for one year. A single year reads "in 1975"; a range reads ", 1954 to 1963"."""
+    when = f"in {year['label']}" if re.fullmatch(r"[0-9]{4}", year["label"]) else f"from {year['label']}"
+    return f"Osho discourses {when}: {year['heading']}"
+
+
+def clip(text, limit=155):
+    """Shorten to a whole number of words within `limit` characters, for a meta description."""
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:.")
+    return cut + "\u2026"
+
+
+def year_page(year, section, years, outlines):
+    """One year on its own address: the same section the home page shows, with its own head."""
+    at = years.index(year)
+    url = SITE + year_url(year)
+    title, description = year_title(year), clip(year["lede"])
+    ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "@id": url,
+        "url": url,
+        "name": title,
+        "description": description,
+        "inLanguage": "en",
+        "isPartOf": {"@id": f"{SITE}#website"},
+    }, ensure_ascii=False, separators=(",", ":"))
+    json.loads(ld)
+    ld = '<script type="application/ld+json">' + ld.replace("<", "\\u003c") + "</script>"
+    head = head_html(title, description, url, title, description, ld, root="/", extra_css=("pages.css",))
+    band = year_band(years, lambda y: "/" + year_url(y), current=year["id"], last='<a href="/">All years</a>')
+    # The section is the home page's own markup. Only its picture addresses change, and the
+    # rail stud is inked in, which the home page does with its script as the year scrolls by.
+    section = section.replace('="assets/', '="/assets/').replace('<section class="year"', '<section class="year arrived"', 1)
+    def step(y, rel, word):
+        if y is None:
+            return "<span></span>"
+        return (f'<a rel="{rel}" href="/{e(year_url(y))}"><small>{word}</small>'
+                f'<b>{e(y["label"])}</b><span>{e(y["heading"])}</span></a>')
+    earlier = years[at - 1] if at else None
+    later = years[at + 1] if at + 1 < len(years) else None
+    return f"""<!doctype html>
+<html lang="en">
+{head}
+<body>
+{sprite_html(outlines)}<a class="skip" href="#main">Skip to the year</a>
+<header class="mast sub">
+  <h1><a href="/">Osho: the discourses</a><br><span>{e(year['label'])}</span></h1>
+  <div class="intro-side">
+  <p>Part of a chronology of every discourse listed on the Sannyas Wiki. <a href="/#y-{e(year['id'])}">See it among all {len(years)} years</a>.</p>
+  </div>
+</header>
+{band}
+<main id="main" class="solo">
+{section}
+<nav class="pager" aria-label="Earlier and later years">
+{step(earlier, "prev", "Earlier")}
+{step(later, "next", "Later")}
+</nav>
+</main>
+{footer_html()}<script>(function () {{
+  var here = document.querySelector('.years [aria-current]');
+  if (here) here.parentNode.scrollLeft = here.offsetLeft - (here.parentNode.clientWidth - here.offsetWidth) / 2;
+}})();</script>
+{ANALYTICS}</body>
+</html>
+"""
+
+
+def check_pages(pages):
+    """Every page needs its own title, description and canonical, and every link inside the site must lead to a file."""
+    seen = {"title": {}, "description": {}, "canonical": {}}
+    patterns = {
+        "title": r"<title>(.*?)</title>",
+        "description": r'<meta name="description" content="(.*?)">',
+        "canonical": r'<link rel="canonical" href="(.*?)">',
+    }
+    for path, text in pages.items():
+        for what, pattern in patterns.items():
+            found = re.findall(pattern, text.split("</head>", 1)[0])  # the maps have <title> elements of their own
+            if len(found) != 1 or not found[0]:
+                raise SystemExit(f"{path}: needs exactly one {what}, found {len(found)}")
+            if found[0] in seen[what]:
+                raise SystemExit(f"{path}: has the same {what} as {seen[what][found[0]]}")
+            seen[what][found[0]] = path
+        folder = path.rsplit("/", 1)[0] + "/" if "/" in path else ""
+        for link in set(re.findall(r'(?:href|src)="([^"#]*)', text)):
+            if not link or re.match(r"[a-z]+:|//|/_vercel/", link):
+                continue
+            target = (link[1:] if link.startswith("/") else folder + link).split("?")[0]
+            if target == "" or target.endswith("/"):
+                target += "index.html"
+            if not (OUT / target).is_file():
+                raise SystemExit(f"{path}: links to {link}, which is not in _site/")
 
 
 def check_og_image(path):
@@ -776,6 +912,13 @@ def main():
             raise SystemExit(f"{y['id']}: no rows")
         all_rows += rows
         sections.append(year_html(y, rows, places, outlines, media, links))
+    # Year pages take their address from the id and their neighbours from the order here.
+    ids = [y["id"] for y in years]
+    if len(set(ids)) != len(ids):
+        raise SystemExit(f"years.json: the id {max(ids, key=ids.count)!r} is used more than once")
+    numerals = [y["numeral"] for y in years]
+    if numerals != sorted(set(numerals)):
+        raise SystemExit("years.json: the years must be in date order, each numeral later than the one before")
     row_keys = [norm(r["title"]) for r in all_rows]
     for key, items in links.items():
         if not any(k == key or k.startswith(key + " ") for k in row_keys):
@@ -799,10 +942,18 @@ def main():
     (OUT / ".nojekyll").write_text("")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n", encoding="utf-8")
     lastmod, lastmod_source = page_lastmod()
-    (OUT / "sitemap.xml").write_text(sitemap_xml([SITE], lastmod), encoding="utf-8")
-    (OUT / "index.html").write_text(page(years, sections, grand, outlines, tour), encoding="utf-8")
+    pages = {"index.html": page(years, sections, grand, outlines, tour)}
+    for y, section in zip(years, sections):
+        pages[year_url(y) + "index.html"] = year_page(y, section, years, outlines)
+    for path, text in pages.items():
+        (OUT / path).parent.mkdir(parents=True, exist_ok=True)
+        (OUT / path).write_text(text, encoding="utf-8")
+    check_pages(pages)
+    urls = [SITE + path[:-len("index.html")] for path in pages]
+    (OUT / "sitemap.xml").write_text(sitemap_xml(urls, lastmod), encoding="utf-8")
     print(f"built _site/index.html: {grand['rows']} entries, {grand['towns']} places, {len(years)} sections")
-    print(f"sitemap.xml: 1 URL, lastmod {lastmod} from {lastmod_source}")
+    print(f"built {len(pages) - 1} year pages in _site/year/")
+    print(f"sitemap.xml: {len(urls)} URLs, lastmod {lastmod} from {lastmod_source}")
 
 
 if __name__ == "__main__":
