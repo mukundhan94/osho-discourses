@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 .vercel
 .env*
+web/node_modules/
+web/dist/
+web/.shots/
+web/.shots-results/

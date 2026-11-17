@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help build serve check media slugs bodycheck clean
+.PHONY: help build serve check media slugs bodycheck parity shots clean
 # Take BASELINE as typed: make would otherwise expand $(...) in it as make syntax.
 override BASELINE := $(value BASELINE)
 export BASELINE
@@ -24,6 +24,13 @@ slugs: ## Give new series an address in data/slugs.csv
 
 bodycheck: build ## Compare the home page body with BASELINE=<saved copy of index.html>
 	scripts/body_check.sh "$$BASELINE"
+
+parity: build ## Compare _site/ with web/dist/: pages, head tags, links, labels and text
+	python3 scripts/parity_check.py
+
+shots: build ## Photograph _site/, then compare web/dist/ with the pictures
+	npm --prefix web run shots:reference
+	PARITY_DIR=dist npm --prefix web run shots:compare
 
 clean: ## Remove the built site
 	rm -rf _site

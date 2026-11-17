@@ -21,6 +21,30 @@ Some differences are expected and stay listed:
 
 Compares the home page's `<body>` with a saved baseline, byte for byte. See [publishing.md](publishing.md). It covers the home page only, and only the body: changes inside `<head>` pass.
 
+## `make parity` and `make shots`
+
+These two exist while the build moves from Python to React. They compare the Python build in `_site/` with the new build in `web/dist/`, which must give readers and search engines the same site.
+
+`make parity` runs `scripts/parity_check.py` (Python, no dependencies). It compares:
+
+- the set of pages, `robots.txt`, and the addresses in `sitemap.xml`;
+- on every page: the title, description, canonical, social tags, JSON-LD, ids, links, visible text, and the attributes that carry words or meaning (labels, alt text, roles).
+
+It ignores what a reader cannot perceive: markup structure, class names, whitespace and cache markers.
+
+`make shots` runs a Playwright test in `web/`. It photographs the Python build, then photographs the new build and compares each picture pixel by pixel, at 1440px and 390px wide:
+
+| Target | Pictures per width |
+|---|---|
+| Home page: masthead, year band, reading tour, footer | 4 |
+| Home page: each year section | 28 |
+| Year pages, whole page | 28 |
+| Series pages, whole page (20 chosen to cover every kind) | 20 |
+
+No pixel may differ. Fifteen runs of the Python build against itself differed by zero pixels (2026-11-17).
+
+Before the first `make shots`, run `npm --prefix web install` and `npx --prefix web playwright install chromium` once. To compare a folder other than `web/dist/`, run `python3 scripts/parity_check.py OLD NEW`, or set `PARITY_DIR` for `npm --prefix web run shots:compare`.
+
 ## `make build`
 
 `make build` fails on any of these:
