@@ -31,8 +31,8 @@ Each sitemap entry carries a last-modified date. The build prints where the date
 
 | Situation | Date used |
 |---|---|
-| Full git history | The last commit that touched `data/` |
-| Shallow clone whose history stops before that commit | The oldest commit it has. The data changed on or before that date |
+| Full git history | The last commit that touched `data/`, `assets/` or `scripts/build.py`, the three things the page is built from |
+| Shallow clone whose history stops before that commit | The oldest commit it has. The page changed on or before that date |
 | No git | The build date |
 
 ## Checking that the home page did not change

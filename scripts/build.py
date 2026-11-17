@@ -512,21 +512,25 @@ def git(*args):
         return ""
 
 
-def data_lastmod():
-    """Date the data last changed, for the sitemap, and where that date came from.
+# Everything the home page is built from. A commit to any of these changes the page.
+PAGE_SOURCES = ("data", "assets", "scripts/build.py")
+
+
+def page_lastmod():
+    """Date the home page last changed, for the sitemap, and where that date came from.
 
     In a shallow clone the oldest commit looks as if it added every file, so a
     date read from it is only an upper bound. Without git, use today's date.
     """
-    found = git("log", "-1", "--format=%H %cs", "--", "data")
+    found = git("log", "-1", "--format=%H %cs", "--", *PAGE_SOURCES)
     if not re.fullmatch(r"[0-9a-f]{40} \d{4}-\d{2}-\d{2}", found):
         return datetime.date.today().isoformat(), "build date (git history not available)"
     commit, date = found.split()
     shallow_file = git("rev-parse", "--git-path", "shallow")
     boundary = (ROOT / shallow_file).read_text().split() if shallow_file and (ROOT / shallow_file).exists() else []
     if commit in boundary:
-        return date, "oldest commit in a shallow clone (data changed on or before this date)"
-    return date, "last commit touching data/"
+        return date, "oldest commit in a shallow clone (the page changed on or before this date)"
+    return date, "last commit touching " + ", ".join(PAGE_SOURCES)
 
 
 def sitemap_xml(urls, lastmod):
@@ -714,7 +718,7 @@ def main():
     shutil.copytree(ROOT / "assets", OUT / "assets")
     (OUT / ".nojekyll").write_text("")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n", encoding="utf-8")
-    lastmod, lastmod_source = data_lastmod()
+    lastmod, lastmod_source = page_lastmod()
     (OUT / "sitemap.xml").write_text(sitemap_xml([SITE], lastmod), encoding="utf-8")
     (OUT / "index.html").write_text(page(years, sections, grand, outlines, tour), encoding="utf-8")
     print(f"built _site/index.html: {grand['rows']} entries, {grand['towns']} places, {len(years)} sections")
