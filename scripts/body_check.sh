@@ -32,6 +32,7 @@ if cmp -s "$tmp/baseline" "$tmp/built"; then
   echo "body identical ($(wc -c < "$tmp/built" | tr -d ' ') bytes)"
 else
   echo "body differs: $baseline vs $built"
-  diff <(tr '>' '>\n' < "$tmp/baseline") <(tr '>' '>\n' < "$tmp/built") | head -20 || true
+  # One tag per line, so the diff shows the changed tag and not the whole row.
+  diff <(tr '>' '\n' < "$tmp/baseline") <(tr '>' '\n' < "$tmp/built") | head -20 || true
   exit 1
 fi
