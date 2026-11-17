@@ -464,7 +464,7 @@ def photo_html(p):
     )
 
 
-def year_html(year, rows, places, outlines, media, links, series_urls=None):
+def year_html(year, rows, places, outlines, media, links, series_urls=None, year_href=""):
     summary, show_lang = summary_for(rows)
     _, _, ranked = town_weights(rows)
     towns_line = " ".join(f'<span class="keep">{"· " if i else ""}{e(t)}</span>' for i, t in enumerate(ranked[:4]))
@@ -472,12 +472,15 @@ def year_html(year, rows, places, outlines, media, links, series_urls=None):
     photo = photo_html(year.get("photo"))
     closing, table, key = year_parts(year, rows, show_lang, media, links, series_urls)
     yid = e(year["id"])
+    numeral = e(year["numeral"])
+    if year_href:  # on the home page the numeral leads to the year's own page
+        numeral = f'<a href="{e(year_href)}">{numeral}</a>'
     return f"""
 <section class="year" id="y-{yid}" aria-labelledby="h-{yid}">
   <div class="rail">
     <span class="stud" aria-hidden="true"></span>
     <div class="rail-in">
-    <h2 id="h-{yid}"><span class="num">{e(year['numeral'])}</span>{sub}</h2>
+    <h2 id="h-{yid}"><span class="num">{numeral}</span>{sub}</h2>
     <p class="towns">{towns_line}</p>
     <p class="summary">{e(summary)}</p>
     {map_svg(year, rows, places, outlines)}
@@ -1165,7 +1168,6 @@ def main():
             raise SystemExit(f"{y['id']}: no rows")
         all_rows += rows
         rows_by_year[y["id"]] = rows
-        sections.append(year_html(y, rows, places, outlines, media, links))
     # Year pages take their address from the id and their neighbours from the order here.
     ids = [y["id"] for y in years]
     if len(set(ids)) != len(ids):
@@ -1192,6 +1194,9 @@ def main():
     for x in series:
         x["slug"] = slugs[x["key"]]
     series_urls = {x["key"]: "/" + series_url(x) for x in series}
+    # The home page: every titled row leads to its series page, every numeral to its year page.
+    sections = [year_html(y, rows_by_year[y["id"]], places, outlines, media, links, series_urls, "/" + year_url(y))
+                for y in years]
     # Empty _site/ rather than delete it, so a local server serving it keeps working.
     OUT.mkdir(exist_ok=True)
     for child in OUT.iterdir():
@@ -1203,7 +1208,7 @@ def main():
     lastmod, lastmod_source = page_lastmod()
     pages = {"index.html": page(years, sections, grand, outlines, tour)}
     for y in years:
-        # The home page's section again, this time with each series title leading to its page.
+        # The same section without the link on the numeral, since this is the page it would lead to.
         section = year_html(y, rows_by_year[y["id"]], places, outlines, media, links, series_urls)
         parts = [SITE + series_url(x) for x in series if y in x["years"]]
         pages[year_url(y) + "index.html"] = year_page(y, section, years, outlines, parts)
@@ -1211,7 +1216,8 @@ def main():
         earlier = series[n - 1] if n else None
         later = series[n + 1] if n + 1 < len(series) else None
         pages[series_url(x) + "index.html"] = series_page(x, earlier, later, years, places, outlines, media, links)
-    for path, text in pages.items():
+    # The home page goes last, so its links never point at pages that are not written yet.
+    for path, text in reversed(pages.items()):
         (OUT / path).parent.mkdir(parents=True, exist_ok=True)
         (OUT / path).write_text(text, encoding="utf-8")
     check_pages(pages)

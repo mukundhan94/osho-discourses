@@ -53,7 +53,7 @@ A new kind of page in its own folder needs its own redirect rule there.
 
 These addresses are public once deployed. Changing a year's `id` changes its address, so add a redirect in `vercel.json` if one ever has to change.
 
-The home page does not link to the year pages yet. Search engines find them through `sitemap.xml`.
+On the home page each year's numeral leads to its year page. A year page's own numeral is not a link.
 
 ## Series pages
 
@@ -63,7 +63,7 @@ Each titled series has a page too, so a search for one series can land on it.
 - **Which rows:** a row belongs to the series that `data/media.csv` matches its title to, the same match that gives the row its Listen, Video and Wiki links. Rows with no match (talks grouped by town, mostly) have no series page and appear only on their year page.
 - **Content:** every row of the series, grouped under the year it falls in, with the same links as on the year page. Beside it: the first year, the towns, a count, and a map when the series was given in more than one town.
 - **Head:** its own title (`Beyond Psychology (1986), Osho discourse series`), a description built from the rows, itself as canonical, and a `CreativeWorkSeries` JSON-LD block that names the wiki page as `sameAs`.
-- **Links:** each year heading leads to that row on the year page, and two links lead to the series before and after it by date. On year pages each series title now leads to its series page, and the year's JSON-LD lists them as `hasPart`.
+- **Links:** each year heading leads to that row on the year page, and two links lead to the series before and after it by date. On the home page and on year pages each series title leads to its series page, and a year page's JSON-LD lists them as `hasPart`. The example rows in the reading tour are not links.
 
 ### Slugs do not change
 
