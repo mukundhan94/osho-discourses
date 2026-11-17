@@ -597,6 +597,46 @@ def tour_html(sample_rows):
   </div>"""
 
 
+def json_ld(years):
+    """Structured data for search engines: what the site is, and the collection it holds."""
+    first, last = years[0]["numeral"], years[-1]["numeral"]
+    # [0-9], not \d: \d also accepts digits from other scripts, which are not valid in a date.
+    if not (re.fullmatch(r"[0-9]{4}", first) and re.fullmatch(r"[0-9]{4}", last)) or first > last:
+        raise SystemExit(f"years.json: the first and last numerals must be years in order, got {first!r} and {last!r}")
+    graph = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": f"{SITE}#website",
+                "name": "Osho: the discourses",
+                "url": SITE,
+                "description": "A free, non-commercial library of when and where Osho spoke, "
+                               f"year by year from {first} to {last}, with links to recordings hosted by others.",
+                "inLanguage": "en",
+            },
+            {
+                "@type": "Dataset",
+                "@id": f"{SITE}#dataset",
+                "name": f"Chronology of Osho's discourses, {first} to {last}",
+                "description": f"Every discourse listed on the Sannyas Wiki year timelines from {first} to {last}, "
+                               "in date order: the series, the dates, the place and the number of talks.",
+                "url": SITE,
+                "license": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+                "temporalCoverage": f"{first}/{last}",
+                "creator": {"@type": "Organization", "name": "oshodiscourses.com", "url": SITE},
+                "isBasedOn": WIKI,
+                "isAccessibleForFree": True,
+            },
+        ],
+    }
+    text = json.dumps(graph, ensure_ascii=False, separators=(",", ":"))
+    if json.loads(text) != graph:
+        raise SystemExit("json-ld: the structured data does not survive a round trip")
+    # "<" cannot end the script element early once it is written as an escape.
+    return '<script type="application/ld+json">' + text.replace("<", "\\u003c") + "</script>"
+
+
 def page(years, sections, grand, outlines, tour):
     span = f"{years[0]['numeral']} to {years[-1]['numeral']}"
     nav, decade = [], None
@@ -625,6 +665,7 @@ def page(years, sections, grand, outlines, tour):
 <meta property="og:image:height" content="{OG_SIZE[1]}">
 <meta property="og:image:alt" content="{e(OG_IMAGE_ALT)}">
 <meta name="twitter:card" content="summary_large_image">
+{json_ld(years)}
 <meta name="theme-color" content="#1F3A6B">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F3A6B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23E9A21A'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23C2281D'/%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/yatra-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
