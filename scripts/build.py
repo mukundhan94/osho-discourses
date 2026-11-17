@@ -4,12 +4,14 @@
 Usage: python3 scripts/build.py
 """
 import csv
+import datetime
 import hashlib
 import html
 import json
 import math
 import re
 import shutil
+import subprocess
 import sys
 import urllib.parse
 from pathlib import Path
@@ -503,6 +505,36 @@ def year_parts(year, rows, show_lang, media, links):
     return closing, year_table(year, rows, show_lang, media, links), KEY
 
 
+def git(*args):
+    try:
+        return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=10, check=True).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def data_lastmod():
+    """Date the data last changed, for the sitemap, and where that date came from.
+
+    In a shallow clone the oldest commit looks as if it added every file, so a
+    date read from it is only an upper bound. Without git, use today's date.
+    """
+    found = git("log", "-1", "--format=%H %cs", "--", "data")
+    if not re.fullmatch(r"[0-9a-f]{40} \d{4}-\d{2}-\d{2}", found):
+        return datetime.date.today().isoformat(), "build date (git history not available)"
+    commit, date = found.split()
+    shallow_file = git("rev-parse", "--git-path", "shallow")
+    boundary = (ROOT / shallow_file).read_text().split() if shallow_file and (ROOT / shallow_file).exists() else []
+    if commit in boundary:
+        return date, "oldest commit in a shallow clone (data changed on or before this date)"
+    return date, "last commit touching data/"
+
+
+def sitemap_xml(urls, lastmod):
+    items = "".join(f"  <url><loc>{e(u)}</loc><lastmod>{lastmod}</lastmod></url>\n" for u in urls)
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + items + "</urlset>\n")
+
+
 def asset_version(name):
     """Short content hash, so a changed stylesheet or script is never served from a stale cache."""
     return hashlib.sha256((ROOT / "assets" / name).read_bytes()).hexdigest()[:10]
@@ -682,8 +714,11 @@ def main():
     shutil.copytree(ROOT / "assets", OUT / "assets")
     (OUT / ".nojekyll").write_text("")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n", encoding="utf-8")
+    lastmod, lastmod_source = data_lastmod()
+    (OUT / "sitemap.xml").write_text(sitemap_xml([SITE], lastmod), encoding="utf-8")
     (OUT / "index.html").write_text(page(years, sections, grand, outlines, tour), encoding="utf-8")
     print(f"built _site/index.html: {grand['rows']} entries, {grand['towns']} places, {len(years)} sections")
+    print(f"sitemap.xml: 1 URL, lastmod {lastmod} from {lastmod_source}")
 
 
 if __name__ == "__main__":
