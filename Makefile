@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := help
 .PHONY: help build serve check media bodycheck clean
+# Take BASELINE as typed: make would otherwise expand $(...) in it as make syntax.
+override BASELINE := $(value BASELINE)
 export BASELINE
 
 help: ## Show these targets
