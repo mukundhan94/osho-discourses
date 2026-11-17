@@ -30,6 +30,7 @@ Compares the home page's `<body>` with a saved baseline, byte for byte. See [pub
 - a photograph that is missing from `assets/img/` or not listed in `assets/img/CREDITS.md`
 - a shared picture (`OG_IMAGE` in `scripts/build.py`) that is not a PNG, is cut short or damaged, is not 1200 by 630 pixels, or is over 300 KB
 - an `id` used twice in `data/years.json`, or years that are not in date order
+- a series with no row in `data/slugs.csv`, a row there whose series is gone, or a slug that is repeated or not lower-case letters and digits joined by hyphens
 - two pages with the same title, description or canonical address, or a page missing one of them
 - a link or picture address inside the site that leads to no file in `_site/`
 - structured data that does not parse back to what was written, or a first or last entry in `data/years.json` whose `numeral` is not a four-digit year, or a first year later than the last
