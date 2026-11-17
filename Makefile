@@ -1,5 +1,8 @@
 .DEFAULT_GOAL := help
 .PHONY: help build serve check media bodycheck clean
+# Take BASELINE as typed: make would otherwise expand $(...) in it as make syntax.
+override BASELINE := $(value BASELINE)
+export BASELINE
 
 help: ## Show these targets
 	@grep -E '^[a-z]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-6s %s\n", $$1, $$2}'
@@ -17,7 +20,7 @@ media: ## Refresh data/media.csv (listen and watch links) from the wiki and Osho
 	python3 scripts/media_links.py
 
 bodycheck: build ## Compare the home page body with BASELINE=<saved copy of index.html>
-	scripts/body_check.sh $(BASELINE)
+	scripts/body_check.sh "$$BASELINE"
 
 clean: ## Remove the built site
 	rm -rf _site
