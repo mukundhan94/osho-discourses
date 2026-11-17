@@ -64,7 +64,9 @@ The page's `<head>` carries one JSON-LD block that tells search engines what the
 - The creator is the site itself, an `Organization` named `oshodiscourses.com`. No person is named.
 - The build serialises the block and parses it back, and fails if the two differ.
 
-The build can only show that the block is valid JSON. Whether a search engine accepts it is checked with Google's Rich Results Test on the live address.
+The build can only show that the block is valid JSON.
+
+Google's Dataset guide says to validate with the Rich Results Test, run on the live address. That test covers the `Dataset` item. It has nothing to report for `WebSite`, and a pass does not mean Google will use the markup.
 
 ## Checking that the home page did not change
 

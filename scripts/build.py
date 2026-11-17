@@ -600,8 +600,9 @@ def tour_html(sample_rows):
 def json_ld(years):
     """Structured data for search engines: what the site is, and the collection it holds."""
     first, last = years[0]["numeral"], years[-1]["numeral"]
-    if not (re.fullmatch(r"\d{4}", first) and re.fullmatch(r"\d{4}", last)):
-        raise SystemExit(f"years.json: the first and last numerals must be years, got {first!r} and {last!r}")
+    # [0-9], not \d: \d also accepts digits from other scripts, which are not valid in a date.
+    if not (re.fullmatch(r"[0-9]{4}", first) and re.fullmatch(r"[0-9]{4}", last)) or first > last:
+        raise SystemExit(f"years.json: the first and last numerals must be years in order, got {first!r} and {last!r}")
     graph = {
         "@context": "https://schema.org",
         "@graph": [
