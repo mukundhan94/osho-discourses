@@ -257,7 +257,7 @@ footer p{max-width:60ch;margin-bottom:.9rem}
   /* The map and the month chart run the full width under the summary, large enough to read the town names. */
   .rail-in{display:block}
   .map,.months{margin:1.2rem 0 0}
-  .map{max-width:24rem}
+  .map{max-width:20rem}
   .map figcaption,.months figcaption,.months .where{display:block}
   .rail{padding:1.4rem 0 1.2rem}
   .opener.has-photo .plate{aspect-ratio:16/9}

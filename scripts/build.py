@@ -912,6 +912,13 @@ def main():
             raise SystemExit(f"{y['id']}: no rows")
         all_rows += rows
         sections.append(year_html(y, rows, places, outlines, media, links))
+    # Year pages take their address from the id and their neighbours from the order here.
+    ids = [y["id"] for y in years]
+    if len(set(ids)) != len(ids):
+        raise SystemExit(f"years.json: the id {max(ids, key=ids.count)!r} is used more than once")
+    numerals = [y["numeral"] for y in years]
+    if numerals != sorted(set(numerals)):
+        raise SystemExit("years.json: the years must be in date order, each numeral later than the one before")
     row_keys = [norm(r["title"]) for r in all_rows]
     for key, items in links.items():
         if not any(k == key or k.startswith(key + " ") for k in row_keys):
