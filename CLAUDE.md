@@ -12,6 +12,7 @@ This is a non-commercial reference library: it collects what was spoken, when an
 | `make build` | Build into `_site/` |
 | `make check` | Compare `data/talks/` with the raw wiki year pages |
 | `make media` | Regenerate `data/media.csv` (slow: it fetches about 900 pages) |
+| `make slugs` | Give new series an address in `data/slugs.csv` |
 
 Python 3 standard library only. Do not add dependencies or a build step.
 
@@ -36,6 +37,7 @@ Python 3 standard library only. Do not add dependencies or a build step.
 - **No commercial links:** no shops, paid memberships or advertising.
 - **Photographs:** freely licensed only, credited in `assets/img/CREDITS.md`. None of Osho, and none whose subject is an identifiable private person.
 - **No em-dashes** in any text. The build rejects them in the data files.
+- **Series addresses are permanent.** Never change a `slug` in `data/slugs.csv`; see [docs/publishing.md](docs/publishing.md).
 - **`_site/` is build output.** Never commit it.
 
 ## After a change

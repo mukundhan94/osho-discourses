@@ -25,7 +25,7 @@ The GitHub workflow (`.github/workflows/build.yml`) builds every push and pull r
 `make build` writes two files beside the page:
 
 - `robots.txt` allows every crawler and points to `sitemap.xml`.
-- `sitemap.xml` lists every page: the home page and one page per year. The addresses are built from `SITE` in `scripts/build.py`.
+- `sitemap.xml` lists every page: the home page, one page per year and one per series (575 in all). The addresses are built from `SITE` in `scripts/build.py`.
 
 Each sitemap entry carries a last-modified date. The build prints where the date came from:
 
@@ -47,13 +47,31 @@ Each year also has a page of its own, so a search can land on that year instead 
 
 `vercel.json` sets `trailingSlash` to `true`, so `/year/1975` redirects to `/year/1975/`. Addresses that end in a file extension, such as the stylesheet, are not redirected.
 
-That would leave `/year/1975/index.html` serving the page as a second address, so `vercel.json` also redirects `/index.html` to `/` and `/year/<id>/index.html` to `/year/<id>/`.
+That would leave `/year/1975/index.html` serving the page as a second address, so `vercel.json` also redirects `/index.html` to `/`, `/year/<id>/index.html` to `/year/<id>/` and `/series/<slug>/index.html` to `/series/<slug>/`.
 
 A new kind of page in its own folder needs its own redirect rule there.
 
 These addresses are public once deployed. Changing a year's `id` changes its address, so add a redirect in `vercel.json` if one ever has to change.
 
 The home page does not link to the year pages yet. Search engines find them through `sitemap.xml`.
+
+## Series pages
+
+Each titled series has a page too, so a search for one series can land on it.
+
+- **Address:** `/series/<slug>/`, for example `/series/beyond-psychology/`. There are 546.
+- **Which rows:** a row belongs to the series that `data/media.csv` matches its title to, the same match that gives the row its Listen, Video and Wiki links. Rows with no match (talks grouped by town, mostly) have no series page and appear only on their year page.
+- **Content:** every row of the series, grouped under the year it falls in, with the same links as on the year page. Beside it: the first year, the towns, a count, and a map when the series was given in more than one town.
+- **Head:** its own title (`Beyond Psychology (1986), Osho discourse series`), a description built from the rows, itself as canonical, and a `CreativeWorkSeries` JSON-LD block that names the wiki page as `sameAs`.
+- **Links:** each year heading leads to that row on the year page, and two links lead to the series before and after it by date. On year pages each series title now leads to its series page, and the year's JSON-LD lists them as `hasPart`.
+
+### Slugs do not change
+
+`data/slugs.csv` holds one row per series: its key in `data/media.csv` and its slug. The slug is the key with spaces turned into hyphens.
+
+- The build never invents an address. A series with no row in `slugs.csv` stops the build; run `make slugs` to add the missing rows, then commit the file.
+- A row whose series no longer exists also stops the build. Its page is public, so add a redirect for it in `vercel.json` before removing the row.
+- To keep an address when the wiki renames a series, change the row's `key` and leave its `slug`.
 
 ## The picture shown when the site is shared
 

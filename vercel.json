@@ -7,6 +7,7 @@
   "trailingSlash": true,
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
-    { "source": "/year/:id/index.html", "destination": "/year/:id/", "permanent": true }
+    { "source": "/year/:id/index.html", "destination": "/year/:id/", "permanent": true },
+    { "source": "/series/:slug/index.html", "destination": "/series/:slug/", "permanent": true }
   ]
 }

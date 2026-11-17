@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help build serve check media bodycheck clean
+.PHONY: help build serve check media slugs bodycheck clean
 # Take BASELINE as typed: make would otherwise expand $(...) in it as make syntax.
 override BASELINE := $(value BASELINE)
 export BASELINE
@@ -18,6 +18,9 @@ check: ## Compare the data with the raw wiki pages
 
 media: ## Refresh data/media.csv (listen and watch links) from the wiki and OshoWorld
 	python3 scripts/media_links.py
+
+slugs: ## Give new series an address in data/slugs.csv
+	python3 scripts/build.py --slugs
 
 bodycheck: build ## Compare the home page body with BASELINE=<saved copy of index.html>
 	scripts/body_check.sh "$$BASELINE"

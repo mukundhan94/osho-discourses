@@ -377,26 +377,33 @@ MONTHS = ["", "January", "February", "March", "April", "May", "June", "July", "A
           "September", "October", "November", "December"]
 
 
-def rows_html(rows, show_lang, media, links):
-    """Rows in order, with a month divider in long years and repeated places marked."""
-    out, last_month, last_place = [], None, None
-    seen = set()
-    dividers = len(rows) > 20
+def row_ids(rows):
+    """The id each row carries on the page, in row order. Rows that share a sort key get an x added."""
+    out, seen = [], set()
     for r in rows:
-        month = month_of(r)
-        if dividers and month and month != last_month:
-            out.append(f'<tr class="month"><th colspan="4" scope="rowgroup">{MONTHS[month]}</th></tr>')
-            last_month, last_place = month, None
         rid = "r-" + re.sub(r"[^0-9a-z]+", "-", r["sort"].lower())
         while rid in seen:
             rid += "x"
         seen.add(rid)
-        out.append(row_html(r, show_lang, media, links, same_place=(r["place"] == last_place), rid=rid))
+        out.append(rid)
+    return out
+
+
+def rows_html(rows, show_lang, media, links, series_urls=None):
+    """Rows in order, with a month divider in long years and repeated places marked."""
+    out, last_month, last_place = [], None, None
+    dividers = len(rows) > 20
+    for r, rid in zip(rows, row_ids(rows)):
+        month = month_of(r)
+        if dividers and month and month != last_month:
+            out.append(f'<tr class="month"><th colspan="4" scope="rowgroup">{MONTHS[month]}</th></tr>')
+            last_month, last_place = month, None
+        out.append(row_html(r, show_lang, media, links, same_place=(r["place"] == last_place), rid=rid, series_urls=series_urls))
         last_place = r["place"]
     return "".join(out)
 
 
-def row_html(r, show_lang, media, links, same_place=False, rid=""):
+def row_html(r, show_lang, media, links, same_place=False, rid="", series_urls=None):
     note = r["note"].strip()
     label = KIND_LABEL.get(r["kind"])
     if label and label.split()[-1].lower().rstrip("s") not in (r["title"] + " " + note).lower():
@@ -408,6 +415,10 @@ def row_html(r, show_lang, media, links, same_place=False, rid=""):
     tail = 2 if len(words) > 2 and re.fullmatch(r"[\d,]+", words[-1]) else 1
     head, last = " ".join(words[:-tail]), "\u00a0".join(words[-tail:])
     title_html = (e(head + " ") if head else "") + f'<span class="keep">{e(last)}{lang}</span>'
+    # Only pages beside the home page pass series_urls; there the title leads to the series page.
+    found = media_for(r["title"], media) if series_urls else None
+    if found and found["key"] in series_urls:
+        title_html = f'<a href="{e(series_urls[found["key"]])}">{title_html}</a>'
     if same_place:
         place_cell = f'<td class="place same"><span class="vh">{e(r["place"])}</span><span aria-hidden="true" title="Same place as above">\u3003</span></td>'
     else:
@@ -453,13 +464,13 @@ def photo_html(p):
     )
 
 
-def year_html(year, rows, places, outlines, media, links):
+def year_html(year, rows, places, outlines, media, links, series_urls=None):
     summary, show_lang = summary_for(rows)
     _, _, ranked = town_weights(rows)
     towns_line = " ".join(f'<span class="keep">{"· " if i else ""}{e(t)}</span>' for i, t in enumerate(ranked[:4]))
     sub = f'<span class="sub">{e(year["numeral_sub"])}</span>' if year.get("numeral_sub") else ""
     photo = photo_html(year.get("photo"))
-    closing, table, key = year_parts(year, rows, show_lang, media, links)
+    closing, table, key = year_parts(year, rows, show_lang, media, links, series_urls)
     yid = e(year["id"])
     return f"""
 <section class="year" id="y-{yid}" aria-labelledby="h-{yid}">
@@ -487,11 +498,11 @@ def year_html(year, rows, places, outlines, media, links):
 </section>"""
 
 
-def year_table(year, rows, show_lang, media, links):
+def year_table(year, rows, show_lang, media, links, series_urls=None):
     return f"""<table>
       <caption>Discourses, {e(year['label'])}, in date order</caption>
       <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
-      <tbody>{rows_html(rows, show_lang, media, links)}</tbody>
+      <tbody>{rows_html(rows, show_lang, media, links, series_urls)}</tbody>
     </table>"""
 
 
@@ -505,9 +516,9 @@ def closing_html(year):
     return f'<div class="closing">{parts}</div>'
 
 
-def year_parts(year, rows, show_lang, media, links):
+def year_parts(year, rows, show_lang, media, links, series_urls=None):
     closing = closing_html(year) if year.get("closing") else ""
-    return closing, year_table(year, rows, show_lang, media, links), KEY
+    return closing, year_table(year, rows, show_lang, media, links, series_urls), KEY
 
 
 def git(*args):
@@ -679,9 +690,11 @@ def head_html(title, description, canonical, og_title, og_description, ld, root=
 </head>"""
 
 
-def sprite_html(outlines):
+def sprite_html(outlines, need=("india", "world")):
+    """Shared shapes: the map outlines a page uses, and the link icons."""
+    defs = "".join(f'<path id="o-{n}" d="{outlines[n + "_d"]}"/>' for n in need)
     return f"""<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
-<defs><path id="o-india" d="{outlines['india_d']}"/><path id="o-world" d="{outlines['world_d']}"/></defs>
+<defs>{defs}</defs>
 <symbol id="i-listen" viewBox="0 0 16 16"><path d="M8 1a6 6 0 0 0-6 6v5a2 2 0 0 0 2 2h1V8H3.5V7a4.5 4.5 0 0 1 9 0v1H11v6h1a2 2 0 0 0 2-2V7a6 6 0 0 0-6-6z"/></symbol>
 <symbol id="i-watch" viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></symbol>
 <symbol id="i-list" viewBox="0 0 16 16"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z"/></symbol>
@@ -777,7 +790,7 @@ def clip(text, limit=155):
     return cut + "\u2026"
 
 
-def year_page(year, section, years, outlines):
+def year_page(year, section, years, outlines, parts=()):
     """One year on its own address: the same section the home page shows, with its own head."""
     at = years.index(year)
     url = SITE + year_url(year)
@@ -791,6 +804,7 @@ def year_page(year, section, years, outlines):
         "description": description,
         "inLanguage": "en",
         "isPartOf": {"@id": f"{SITE}#website"},
+        **({"hasPart": [{"@id": u} for u in parts]} if parts else {}),
     }, ensure_ascii=False, separators=(",", ":"))
     json.loads(ld)
     ld = '<script type="application/ld+json">' + ld.replace("<", "\\u003c") + "</script>"
@@ -810,7 +824,7 @@ def year_page(year, section, years, outlines):
 <html lang="en">
 {head}
 <body>
-{sprite_html(outlines)}<a class="skip" href="#main">Skip to the year</a>
+{sprite_html(outlines, outlines_used(section))}<a class="skip" href="#main">Skip to the year</a>
 <header class="mast sub">
   <h1><a href="/">Osho: the discourses</a><br><span>{e(year['label'])}</span></h1>
   <div class="intro-side">
@@ -825,10 +839,233 @@ def year_page(year, section, years, outlines):
 {step(later, "next", "Later")}
 </nav>
 </main>
-{footer_html()}<script>(function () {{
+{footer_html()}{BAND_SCRIPT}
+{ANALYTICS}</body>
+</html>
+"""
+
+
+BAND_SCRIPT = """<script>(function () {
   var here = document.querySelector('.years [aria-current]');
   if (here) here.parentNode.scrollLeft = here.offsetLeft - (here.parentNode.clientWidth - here.offsetWidth) / 2;
-}})();</script>
+})();</script>"""
+
+
+def outlines_used(markup):
+    return tuple(n for n in ("india", "world") if f'href="#o-{n}"' in markup)
+
+
+# ---- series pages ----------------------------------------------------------
+
+SERIES_WORD = {"series": "discourse series", "camp": "meditation camp talks", "darshan": "darshan diary",
+               "interview": "press interviews", "untitled": "talks"}
+
+
+def collect_series(years, rows_by_year, media):
+    """Every titled series with the rows that belong to it, oldest first.
+
+    A row belongs to the series media.csv matches it to, the same match the row's links use.
+    """
+    found = {}
+    for y in years:
+        rows = rows_by_year[y["id"]]
+        for r, rid in zip(rows, row_ids(rows)):
+            m = media_for(r["title"], media)
+            if m:
+                found.setdefault(m["key"], {"key": m["key"], "media": m, "entries": []})["entries"].append((y, r, rid))
+    out = sorted(found.values(), key=lambda x: (x["entries"][0][1]["sort"], x["key"]))
+    for x in out:
+        first = x["entries"][0][1]["title"]
+        # Prefer the wiki's spelling without its script gloss or part number; fall back to the row's title.
+        wiki = re.sub(r"\s*~\s*\d+\s*$", "", re.sub(r"\s*\([^)]*[^\x00-\x7f][^)]*\)", "", x["media"]["wiki_title"])).strip()
+        row = re.sub(r",\s*\d[\d ,toand]*$", "", first).strip()
+        x["name"] = wiki if norm(wiki) == x["key"] else row
+        if norm(x["name"]) != x["key"]:
+            raise SystemExit(f"series {x['key']!r}: cannot work out a display name from {first!r}")
+        kinds = [r["kind"] for _, r, _ in x["entries"]]
+        x["kind"] = max(set(kinds), key=lambda k: (kinds.count(k), k))
+        ids = [y["id"] for y, _, _ in x["entries"]]
+        x["years"] = [y for y in years if y["id"] in ids]
+        a, b = x["entries"][0][1]["sort"][:4], x["entries"][-1][1]["sort"][:4]
+        x["span"] = a if a == b else f"{a} to {b}"
+    return out
+
+
+def load_slugs(series, add=False):
+    """The address of each series page, frozen in data/slugs.csv so a published address never moves."""
+    path = DATA / "slugs.csv"
+    slugs = {}
+    if path.exists():
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            if reader.fieldnames != ["key", "slug"]:
+                raise SystemExit("slugs.csv: header must be key,slug")
+            for n, r in enumerate(reader, start=2):
+                if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", r["slug"] or ""):
+                    raise SystemExit(f"slugs.csv:{n}: slug must be lower-case letters and digits joined by hyphens")
+                if r["key"] in slugs or r["slug"] in slugs.values():
+                    raise SystemExit(f"slugs.csv:{n}: key or slug is used more than once")
+                slugs[r["key"]] = r["slug"]
+    keys = {x["key"] for x in series}
+    missing = sorted(keys - set(slugs))
+    if missing and add:
+        for key in missing:
+            slug = re.sub(r"[^a-z0-9]+", "-", key).strip("-")
+            if slug in slugs.values():
+                raise SystemExit(f"slugs.csv: {key!r} would repeat the slug {slug!r}; add its row by hand")
+            slugs[key] = slug
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(["key", "slug"])
+            w.writerows(sorted(slugs.items()))
+        print(f"slugs.csv: added {len(missing)} series")
+    elif missing:
+        raise SystemExit(f"slugs.csv: {len(missing)} series have no address yet, the first is {missing[0]!r}. Run `make slugs`.")
+    gone = sorted(set(slugs) - keys)
+    if gone:
+        raise SystemExit(f"slugs.csv: {gone[0]!r} is no longer a series. Its page is public, so add a redirect "
+                         "for /series/" + slugs[gone[0]] + "/ in vercel.json, then remove its row.")
+    return slugs
+
+
+def series_url(x):
+    return f"series/{x['slug']}/"
+
+
+def series_when(r):
+    """A row's dates with its year, as a phrase that follows a comma."""
+    year = r["sort"][:4]
+    dates = r["dates"].strip()
+    if dates == year:
+        return f"in {year}"
+    return dates if re.search(r"\d{4}", dates) else f"{dates} {year}"
+
+
+def series_lede(x):
+    """One or two plain sentences on what the series is, built only from its rows and media.csv."""
+    rows = [r for _, r, _ in x["entries"]]
+    known, open_rows = totals(rows)
+    count = f"{known} talk{'' if known == 1 else 's'}" if known and not open_rows else (f"At least {known} talks" if known else "Talks")
+    langs = {r["lang"] for r in rows if r["lang"]}
+    lang = " in Hindi" if langs == {"hi"} else " in English" if langs == {"en"} else ""
+    label = KIND_LABEL.get(x["kind"])
+    lead = f"{label}. " if label else ""
+    if len(rows) == 1:
+        text = f"{lead}{count}{lang} at {rows[0]['place']}, {series_when(rows[0])}."
+    else:
+        _, _, ranked = town_weights(rows)
+        towns = ", ".join(ranked[:3]) + (" and elsewhere" if len(ranked) > 3 else "")
+        when = f"in {x['span']}" if " to " not in x["span"] else f"from {x['span']}"
+        text = f"{lead}{count}{lang} listed in {len(rows)} entries {when}, at {towns}."
+    whole = int(x["media"]["talks"] or 0)
+    if whole > known and whole > 1:
+        text += f" The wiki lists {whole} talks in the whole series."
+    return text
+
+
+def series_page(x, earlier, later, years, places, outlines, media, links):
+    """One series on its own address: every row it has across the years, with the same links."""
+    rows = [r for _, r, _ in x["entries"]]
+    url = SITE + series_url(x)
+    lede = series_lede(x)
+    title = f"{x['name']} ({x['span']}), Osho {SERIES_WORD[x['kind']]}"
+    description = clip(f"{x['name']}: {lede}")
+    first_year, first_row, first_rid = x["entries"][0]
+    langs = {r["lang"] for r in rows if r["lang"]}
+    towns = {t for r in rows for t in r["town_list"]}
+    data = {
+        "@context": "https://schema.org",
+        "@type": "CreativeWorkSeries",
+        "@id": url,
+        "url": url,
+        "name": x["name"],
+        "description": description,
+        "author": {"@type": "Person", "name": "Osho"},
+        "isPartOf": {"@id": f"{SITE}#website"},
+    }
+    if len(langs) == 1:
+        data["inLanguage"] = next(iter(langs))
+    if re.fullmatch(r"\d{4}(-\d{2}){0,2}", first_row["sort"][:10].rstrip("abcdefgh")):
+        data["startDate"] = first_row["sort"][:10].rstrip("abcdefgh")
+    if len({r["place"] for r in rows}) == 1:
+        data["locationCreated"] = {"@type": "Place", "name": rows[0]["place"]}
+    if x["media"]["wiki_url"]:
+        data["sameAs"] = x["media"]["wiki_url"]
+    ld = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+    json.loads(ld)
+    ld = '<script type="application/ld+json">' + ld.replace("<", "\\u003c") + "</script>"
+    head = head_html(title, description, url, title, description, ld, root="/", extra_css=("pages.css",))
+    band = year_band(years, lambda y: "/" + year_url(y), current=first_year["id"], last='<a href="/">All years</a>')
+
+    body_rows = []
+    for y in x["years"]:
+        mine = [(r, rid) for yy, r, rid in x["entries"] if yy is y]
+        body_rows.append(f'<tr class="month"><th colspan="4" scope="rowgroup"><a href="/{e(year_url(y))}#{mine[0][1]}">{e(y["label"])}</a></th></tr>')
+        last_place = None
+        for r, rid in mine:
+            body_rows.append(row_html(r, False, media, links, same_place=(r["place"] == last_place), rid=rid))
+            last_place = r["place"]
+    summary, _ = summary_for(rows)
+    _, _, ranked = town_weights(rows)
+    towns_line = " ".join(f'<span class="keep">{"· " if i else ""}{e(t)}</span>' for i, t in enumerate(ranked[:4]))
+    a, b = x["span"].partition(" to ")[::2]
+    sub = f'<span class="sub">to {b}</span>' if b else ""
+    figure = map_svg({"label": x["span"]}, rows, places, outlines) if len(towns) > 1 else ""
+    source = (f'<p class="source">Source: <a href="{e(x["media"]["wiki_url"])}">Sannyas Wiki, {e(x["name"])}</a></p>'
+              if x["media"]["wiki_url"] else "")
+    section = f"""
+<section class="year arrived series" aria-labelledby="h-series">
+  <div class="rail">
+    <span class="stud" aria-hidden="true"></span>
+    <div class="rail-in">
+    <h2 id="h-when"><span class="num">{a}</span>{sub}</h2>
+    <p class="towns">{towns_line}</p>
+    <p class="summary">{e(summary)}</p>
+    {figure}
+    </div>
+  </div>
+  <div class="body">
+    <div class="opener">
+      <div class="intro">
+        <h3 id="h-series">{e(x['name'])}</h3>
+        <p class="lede">{e(lede)}</p>
+      </div>
+    </div>
+    <table>
+      <caption>{e(x['name'])}, in date order</caption>
+      <thead><tr><th scope="col" class="dates">Dates</th><th scope="col">Series or talk</th><th scope="col" class="place">Place</th><th scope="col" class="talks">Talks</th></tr></thead>
+      <tbody>{''.join(body_rows)}</tbody>
+    </table>
+    {source}
+    {KEY}
+  </div>
+</section>"""
+
+    def step(s, rel, word):
+        if s is None:
+            return "<span></span>"
+        return (f'<a rel="{rel}" href="/{e(series_url(s))}"><small>{word}</small>'
+                f'<b>{e(s["name"])}</b><span>{e(s["span"])}</span></a>')
+    return f"""<!doctype html>
+<html lang="en">
+{head}
+<body>
+{sprite_html(outlines, outlines_used(section))}<a class="skip" href="#main">Skip to the series</a>
+<header class="mast sub">
+  <h1><a href="/">Osho: the discourses</a><br><span>{e(x['name'])}</span></h1>
+  <div class="intro-side">
+  <p>Part of a chronology of every discourse listed on the Sannyas Wiki. <a href="/{e(year_url(first_year))}#{first_rid}">See it in {e(first_year['label'])}</a>.</p>
+  </div>
+</header>
+{band}
+<main id="main" class="solo">
+{section}
+<nav class="pager" aria-label="Earlier and later series">
+{step(earlier, "prev", "Earlier series")}
+{step(later, "next", "Later series")}
+</nav>
+</main>
+{footer_html()}{BAND_SCRIPT}
 {ANALYTICS}</body>
 </html>
 """
@@ -900,7 +1137,7 @@ def main():
     }
     outlines["india_d"] = raw_path([outlines["india"]])
     outlines["world_d"] = raw_path(outlines["world"])
-    sections, all_rows = [], []
+    sections, all_rows, rows_by_year = [], [], {}
     for y in years:
         y.setdefault("label", y["id"])
         y.setdefault("numeral", y["id"])
@@ -911,6 +1148,7 @@ def main():
         if not rows:
             raise SystemExit(f"{y['id']}: no rows")
         all_rows += rows
+        rows_by_year[y["id"]] = rows
         sections.append(year_html(y, rows, places, outlines, media, links))
     # Year pages take their address from the id and their neighbours from the order here.
     ids = [y["id"] for y in years]
@@ -943,8 +1181,20 @@ def main():
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n", encoding="utf-8")
     lastmod, lastmod_source = page_lastmod()
     pages = {"index.html": page(years, sections, grand, outlines, tour)}
-    for y, section in zip(years, sections):
-        pages[year_url(y) + "index.html"] = year_page(y, section, years, outlines)
+    series = collect_series(years, rows_by_year, media)
+    slugs = load_slugs(series, add="--slugs" in sys.argv)
+    for x in series:
+        x["slug"] = slugs[x["key"]]
+    series_urls = {x["key"]: "/" + series_url(x) for x in series}
+    for y in years:
+        # The home page's section again, this time with each series title leading to its page.
+        section = year_html(y, rows_by_year[y["id"]], places, outlines, media, links, series_urls)
+        parts = [SITE + series_url(x) for x in series if y in x["years"]]
+        pages[year_url(y) + "index.html"] = year_page(y, section, years, outlines, parts)
+    for n, x in enumerate(series):
+        earlier = series[n - 1] if n else None
+        later = series[n + 1] if n + 1 < len(series) else None
+        pages[series_url(x) + "index.html"] = series_page(x, earlier, later, years, places, outlines, media, links)
     for path, text in pages.items():
         (OUT / path).parent.mkdir(parents=True, exist_ok=True)
         (OUT / path).write_text(text, encoding="utf-8")
@@ -952,7 +1202,7 @@ def main():
     urls = [SITE + path[:-len("index.html")] for path in pages]
     (OUT / "sitemap.xml").write_text(sitemap_xml(urls, lastmod), encoding="utf-8")
     print(f"built _site/index.html: {grand['rows']} entries, {grand['towns']} places, {len(years)} sections")
-    print(f"built {len(pages) - 1} year pages in _site/year/")
+    print(f"built {len(years)} year pages in _site/year/ and {len(series)} series pages in _site/series/")
     print(f"sitemap.xml: {len(urls)} URLs, lastmod {lastmod} from {lastmod_source}")
 
 
