@@ -47,7 +47,9 @@ Each year also has a page of its own, so a search can land on that year instead 
 
 `vercel.json` sets `trailingSlash` to `true`, so `/year/1975` redirects to `/year/1975/`. Addresses that end in a file extension, such as the stylesheet, are not redirected.
 
-That includes `/year/1975/index.html`, which still serves the page. Nothing on the site links to that form, and the page's canonical tag names `/year/1975/`.
+That would leave `/year/1975/index.html` serving the page as a second address, so `vercel.json` also redirects `/index.html` to `/` and `/year/<id>/index.html` to `/year/<id>/`.
+
+A new kind of page in its own folder needs its own redirect rule there.
 
 These addresses are public once deployed. Changing a year's `id` changes its address, so add a redirect in `vercel.json` if one ever has to change.
 
