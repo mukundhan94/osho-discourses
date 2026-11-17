@@ -3,5 +3,10 @@
   "framework": null,
   "installCommand": "",
   "buildCommand": "python3 scripts/build.py",
-  "outputDirectory": "_site"
+  "outputDirectory": "_site",
+  "trailingSlash": true,
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/year/:id/index.html", "destination": "/year/:id/", "permanent": true }
+  ]
 }
