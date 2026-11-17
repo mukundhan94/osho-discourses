@@ -273,7 +273,7 @@ Colour photograph, `object-fit: cover`, in the arch with a 6px indigo border and
 - **Decade labels:** small madder display-face labels (60s, 70s, 80s, 90s) in the year band; not links.
 
 ### Links and focus
-Links keep the text colour with a madder underline and turn madder on hover. Focus is a 3px madder outline offset 3px.
+Links keep the text colour with a madder underline and turn madder on hover. A series title that leads to its page has a slightly finer underline; in a camp row the underline is white and the hover colour turmeric. The year numeral is a link with no underline, and turns indigo on hover. Focus is a 3px madder outline offset 3px.
 
 ### Reduced motion and print
 With reduced motion, smooth scrolling and both transitions are off. In print, the year band and printed borders are removed, indigo grounds drop to plain ink on white, camp rows become bold with a solid rule, and each year starts a new page.
