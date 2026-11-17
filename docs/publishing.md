@@ -51,6 +51,21 @@ To redraw one after editing `scripts/og.html`, render it with headless Chrome. R
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 --screenshot="$PWD/assets/og/medallion.png" "file://$PWD/scripts/og.html#medallion"
 ```
 
+## Structured data
+
+The page's `<head>` carries one JSON-LD block that tells search engines what the site is. `json_ld()` in `scripts/build.py` writes it.
+
+| Item | What it says |
+|---|---|
+| `WebSite` | The site's name, address, description and language |
+| `Dataset` | The chronology: its name, description, the years it covers, its licence (CC BY-NC-ND 4.0, as in `LICENSE-DATA`), the Sannyas Wiki as its source, and that it is free to read |
+
+- The years come from the first and last entries in `data/years.json`, so they follow the data.
+- The creator is the site itself, an `Organization` named `oshodiscourses.com`. No person is named.
+- The build serialises the block and parses it back, and fails if the two differ.
+
+The build can only show that the block is valid JSON. Whether a search engine accepts it is checked with Google's Rich Results Test on the live address.
+
 ## Checking that the home page did not change
 
 Some changes must leave the home page exactly as visitors see it. Save a copy before the change, then compare after:
