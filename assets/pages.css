@@ -23,17 +23,6 @@
 .pager b{display:block;font:400 1.7rem/1.15 var(--display);color:var(--indigo)}
 .pager span{display:block;font-size:.95rem;line-height:1.35}
 @media (max-width:640px){
-  /* On a phone the home page tucks a small map beside the numeral. A page for one year has room to show it full width. */
-  .solo .rail-in{display:block}
-  .solo .map,.solo .months{margin:1.2rem 0 0}
-  .solo .map{max-width:24rem}
-  .solo .map figcaption,.solo .months figcaption,.solo .months .where{display:block}
-  .solo .months{padding:.9rem 1rem .8rem}
-  .solo .months ol{height:8.5rem;gap:3px}
-  .solo .months .bar{height:calc(var(--v) * 5.6rem)}
-  .solo .months .c{display:block}
-  .solo .months .m{font-size:.66rem}
-  .solo .months .rest{display:inline}
   .pager{grid-template-columns:1fr;gap:1rem}
   .pager > span{display:none}
   .pager a[rel=next]{text-align:left}
