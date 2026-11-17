@@ -1216,7 +1216,8 @@ def main():
         earlier = series[n - 1] if n else None
         later = series[n + 1] if n + 1 < len(series) else None
         pages[series_url(x) + "index.html"] = series_page(x, earlier, later, years, places, outlines, media, links)
-    for path, text in pages.items():
+    # The home page goes last, so its links never point at pages that are not written yet.
+    for path, text in reversed(pages.items()):
         (OUT / path).parent.mkdir(parents=True, exist_ok=True)
         (OUT / path).write_text(text, encoding="utf-8")
     check_pages(pages)
