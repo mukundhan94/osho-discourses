@@ -28,4 +28,5 @@ Compares the home page's `<body>` with a saved baseline, byte for byte. See [pub
 - a wrong header, or an unknown `kind` or `lang`
 - a town missing from `data/places.csv`
 - a photograph that is missing from `assets/img/` or not listed in `assets/img/CREDITS.md`
+- a shared picture (`OG_IMAGE` in `scripts/build.py`) that is not a PNG, is cut short or damaged, is not 1200 by 630 pixels, or is over 300 KB
 - a row in `data/links.csv` with a missing title or label, an unknown `kind`, an address that does not start with `https://`, or a title that matches no series

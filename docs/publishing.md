@@ -35,6 +35,22 @@ Each sitemap entry carries a last-modified date. The build prints where the date
 | Shallow clone whose history stops before that commit | The oldest commit it has. The page changed on or before that date |
 | No git | The build date |
 
+## The picture shown when the site is shared
+
+Chat apps and social sites show a picture beside a link to the site. The page names it in its `og:image` tag.
+
+- The picture in use is set by `OG_IMAGE` in `scripts/build.py`. Today it is `assets/og/medallion.png`.
+- `assets/og/` holds three designs: `masthead.png`, `arch.png` and `medallion.png`. To switch, change `OG_IMAGE`.
+- All three are drawn by `scripts/og.html`, which is not part of the site. They use the site's fonts and colours and no photograph.
+- The build fails unless the picture is a whole, undamaged PNG, 1200 by 630 pixels and under 300 KB.
+- The address in the tag ends in `?v=` and a short hash of the file, as the stylesheet's does. A redrawn picture therefore gets a new address.
+
+To redraw one after editing `scripts/og.html`, render it with headless Chrome. Replace `medallion` with the design's name in both places:
+
+```
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 --screenshot="$PWD/assets/og/medallion.png" "file://$PWD/scripts/og.html#medallion"
+```
+
 ## Checking that the home page did not change
 
 Some changes must leave the home page exactly as visitors see it. Save a copy before the change, then compare after:

@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import urllib.parse
+import zlib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -33,6 +34,10 @@ MAP_W, MAP_H = 265.0, 234.0
 INDIA = (68.0, 90.0, 15.5, 33.0)  # lon0, lon1, lat0, lat1
 
 SITE = "https://oshodiscourses.com/"
+# The picture shown when the site is shared. assets/og/ holds the alternatives.
+OG_IMAGE = "assets/og/medallion.png"
+OG_IMAGE_ALT = "Osho: the discourses, 1954 to 1990, a year-by-year chronology"
+OG_SIZE = (1200, 630)
 REPO = "https://github.com/mukundhan94/osho-discourses"
 NOTICE = ("This is a non-commercial reference library: it collects what was spoken, when and where, "
           "and links to recordings hosted by others. Nothing here is for sale, and the site carries no advertising.")
@@ -615,6 +620,11 @@ def page(years, sections, grand, outlines, tour):
 <meta property="og:title" content="Osho: the discourses, {span}">
 <meta property="og:description" content="Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="{SITE}{OG_IMAGE}?v={asset_version(OG_IMAGE[len('assets/'):])}">
+<meta property="og:image:width" content="{OG_SIZE[0]}">
+<meta property="og:image:height" content="{OG_SIZE[1]}">
+<meta property="og:image:alt" content="{e(OG_IMAGE_ALT)}">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#1F3A6B">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F3A6B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23E9A21A'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23C2281D'/%3E%3C/svg%3E">
 <link rel="preload" href="assets/fonts/yatra-one-latin-400.woff2" as="font" type="font/woff2" crossorigin>
@@ -674,6 +684,34 @@ window.si = window.si || function () {{ (window.siq = window.siq || []).push(arg
 """
 
 
+def check_og_image(path):
+    """The shared picture must be a whole PNG of the size the tags declare, and small enough to load fast."""
+    data = path.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise SystemExit(f"{OG_IMAGE}: not a PNG file")
+    size = (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big"))
+    if size != OG_SIZE:
+        raise SystemExit(f"{OG_IMAGE}: is {size[0]}x{size[1]}, must be {OG_SIZE[0]}x{OG_SIZE[1]}")
+    if len(data) > 300_000:
+        raise SystemExit(f"{OG_IMAGE}: is {len(data)} bytes, must be under 300 KB")
+    # Walk every chunk: each carries its own checksum, and the pixels must inflate.
+    pos, pixels, ended = 8, b"", False
+    while pos + 12 <= len(data) and not ended:
+        length, kind = int.from_bytes(data[pos:pos + 4], "big"), data[pos + 4:pos + 8]
+        body, crc = data[pos + 8:pos + 8 + length], data[pos + 8 + length:pos + 12 + length]
+        if len(body) != length or len(crc) != 4 or zlib.crc32(kind + body) != int.from_bytes(crc, "big"):
+            break
+        pixels += body if kind == b"IDAT" else b""
+        ended = kind == b"IEND"
+        pos += 12 + length
+    try:
+        zlib.decompress(pixels)
+    except zlib.error:
+        ended = False
+    if not ended:
+        raise SystemExit(f"{OG_IMAGE}: the PNG is cut short or damaged")
+
+
 def main():
     places = load_places()
     media = load_media()
@@ -716,6 +754,7 @@ def main():
     for child in OUT.iterdir():
         shutil.rmtree(child) if child.is_dir() else child.unlink()
     shutil.copytree(ROOT / "assets", OUT / "assets")
+    check_og_image(OUT / OG_IMAGE)  # the copy that is published, not the one in assets/
     (OUT / ".nojekyll").write_text("")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n", encoding="utf-8")
     lastmod, lastmod_source = page_lastmod()
