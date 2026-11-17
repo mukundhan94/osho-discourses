@@ -22,7 +22,18 @@ The GitHub workflow (`.github/workflows/build.yml`) builds every push and pull r
 
 ## Files for search engines
 
-`make build` writes `robots.txt` beside the page. It allows every crawler and points to `sitemap.xml`.
+`make build` writes two files beside the page:
+
+- `robots.txt` allows every crawler and points to `sitemap.xml`.
+- `sitemap.xml` lists the site's URLs, built from `SITE` in `scripts/build.py`.
+
+Each sitemap entry carries a last-modified date. The build prints where the date came from:
+
+| Situation | Date used |
+|---|---|
+| Full git history | The last commit that touched `data/`, `assets/` or `scripts/build.py`, the three things the page is built from |
+| Shallow clone whose history stops before that commit | The oldest commit it has. The page changed on or before that date |
+| No git | The build date |
 
 ## Checking that the home page did not change
 
