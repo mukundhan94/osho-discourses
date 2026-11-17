@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Source of the social preview images in assets/og/. Not part of the site.
+     Open with #masthead, #arch or #medallion. See docs/publishing.md for the render command. -->
+<html><head><meta charset="utf-8"><style>
+@font-face{font-family:"Yatra One";src:url(../assets/fonts/yatra-one-latin-400.woff2) format("woff2")}
+@font-face{font-family:Hind;src:url(../assets/fonts/hind-latin-600.woff2) format("woff2");font-weight:600}
+:root{--cloth:#F6E7C8;--ink:#2A1A12;--indigo:#1F3A6B;--madder:#C2281D;--turmeric:#E9A21A;
+--print:radial-gradient(circle at 50% 50%,var(--madder) 0 7px,transparent 7.5px) 0 0/42px 42px,
+radial-gradient(circle at 50% 50%,var(--cloth) 0 12.6px,transparent 13.1px) 0 0/42px 42px,
+radial-gradient(circle at 50% 50%,var(--turmeric) 0 16.8px,transparent 17.3px) 0 0/42px 42px,
+radial-gradient(circle at 0 50%,var(--turmeric) 0 4.2px,transparent 4.7px) 0 0/42px 42px,var(--indigo)}
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{font-family:Hind,sans-serif;font-weight:600;position:relative}
+h1{font-family:"Yatra One",serif;font-weight:400;line-height:.95}
+h1 span{display:block;white-space:nowrap}
+.url{letter-spacing:.02em}
+.strip{position:absolute;left:0;right:0;height:42px;background:var(--print);box-shadow:0 -4px 0 var(--turmeric),0 4px 0 var(--turmeric)}
+.in{position:absolute;display:flex;flex-direction:column;justify-content:center}
+body:not(.masthead) .v-masthead,body:not(.arch) .v-arch,body:not(.medallion) .v-medallion{display:none}
+
+/* masthead: indigo cloth, printed border top and bottom, type coloured as in the site header */
+body.masthead{background:var(--indigo);color:var(--cloth)}
+body.masthead .top{top:30px}
+body.masthead .bot{bottom:30px}
+body.masthead .in{left:84px;right:84px;top:118px;bottom:118px}
+body.masthead h1{font-size:122px;color:var(--turmeric)}
+body.masthead h1 span{color:var(--cloth)}
+body.masthead .yrs{font-size:44px;margin-top:30px}
+body.masthead .yrs b{color:var(--turmeric);font-weight:600}
+body.masthead .url{position:absolute;right:84px;bottom:104px;font-size:28px;color:var(--turmeric)}
+
+/* arch: the tour card's arch in cotton on indigo */
+body.arch{background:var(--indigo)}
+body.arch .top{top:0}
+body.arch .bot{bottom:0}
+body.arch .card{position:absolute;left:140px;right:140px;top:78px;bottom:78px;background:#FFF8E6;border:5px solid var(--indigo);box-shadow:0 0 0 6px var(--turmeric);border-radius:50% 50% 22px 22px / 42% 42% 22px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:84px;color:var(--ink)}
+body.arch .dot{position:absolute;top:26px;left:50%;margin-left:-29px;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,var(--madder) 0 11px,var(--cloth) 11.5px 19px,var(--turmeric) 19.5px)}
+body.arch h1{font-size:98px;color:var(--indigo)}
+body.arch h1 span{color:var(--madder)}
+body.arch .yrs{font-size:38px;margin-top:16px}
+body.arch .url{font-size:26px;margin-top:8px;color:var(--indigo)}
+
+/* medallion: cotton ground, the favicon's rings drawn large, whole, at the right */
+body.medallion{background:var(--cloth);color:var(--ink)}
+body.medallion .bot{bottom:0;box-shadow:0 -4px 0 var(--turmeric)}
+body.medallion .in{left:78px;top:40px;bottom:82px}
+body.medallion svg{position:absolute;width:450px;height:450px;left:722px;top:62px}
+body.medallion h1{font-size:88px;color:var(--madder)}
+body.medallion h1 span{color:var(--indigo)}
+body.medallion .yrs{font-size:40px;margin-top:24px}
+body.medallion .url{font-size:27px;margin-top:16px;color:var(--indigo)}
+</style></head><body>
+<div class="v-masthead"><div class="strip top"></div><div class="in"><h1>Osho: <span>the discourses</span></h1><p class="yrs"><b>1954 to 1990</b> · year by year</p></div><p class="url">oshodiscourses.com</p><div class="strip bot"></div></div>
+<div class="v-arch"><div class="strip top"></div><div class="card"><i class="dot"></i><h1>Osho: <span>the discourses</span></h1><p class="yrs">1954 to 1990, year by year</p><p class="url">oshodiscourses.com</p></div><div class="strip bot"></div></div>
+<div class="v-medallion"><svg id="m" viewBox="-300 -300 600 600"></svg><div class="in"><h1>Osho: <span>the discourses</span></h1><p class="yrs">1954 to 1990, year by year</p><p class="url">oshodiscourses.com</p></div><div class="strip bot"></div></div>
+<script>
+document.body.className = location.hash.slice(1) || "medallion";
+const C = {cloth:"#F6E7C8", indigo:"#1F3A6B", madder:"#C2281D", turmeric:"#E9A21A"};
+const disc = (r, fill) => `<circle r="${r}" fill="${fill}"/>`;
+const dashes = (n, r, w, h) => Array.from({length:n}, (_, i) =>
+  `<rect x="${-w/2}" y="${-r-h/2}" width="${w}" height="${h}" rx="2" fill="${C.cloth}" transform="rotate(${i*360/n})"/>`).join("");
+// Flat rings and one row of printed dashes.
+document.getElementById("m").innerHTML = disc(292, C.turmeric) + disc(279, C.indigo) + dashes(30, 250, 13, 27) +
+  disc(221, C.turmeric) + disc(156, C.cloth) + disc(88, C.madder);
+</script></body></html>
