@@ -818,7 +818,7 @@ def year_page(year, section, years, outlines):
   </div>
 </header>
 {band}
-<main id="main">
+<main id="main" class="solo">
 {section}
 <nav class="pager" aria-label="Earlier and later years">
 {step(earlier, "prev", "Earlier")}
