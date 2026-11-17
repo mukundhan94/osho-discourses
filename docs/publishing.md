@@ -45,7 +45,9 @@ Each year also has a page of its own, so a search can land on that year instead 
 - **Head:** its own title (`Osho discourses in 1975: A discourse every morning`), a description cut from the year's lede at 155 characters, itself as canonical, and a `CollectionPage` JSON-LD block that points to the site.
 - **Styles:** the home page's `assets/site.css`, plus `assets/pages.css` for the masthead and the earlier and later links. The home page does not load `pages.css`.
 
-`vercel.json` sets `trailingSlash` to `true`, so `/year/1975` redirects to `/year/1975/` and each page has one address. Addresses that end in a file extension, such as the stylesheet, are not redirected.
+`vercel.json` sets `trailingSlash` to `true`, so `/year/1975` redirects to `/year/1975/`. Addresses that end in a file extension, such as the stylesheet, are not redirected.
+
+That includes `/year/1975/index.html`, which still serves the page. Nothing on the site links to that form, and the page's canonical tag names `/year/1975/`.
 
 These addresses are public once deployed. Changing a year's `id` changes its address, so add a redirect in `vercel.json` if one ever has to change.
 
