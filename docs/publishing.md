@@ -25,7 +25,7 @@ The GitHub workflow (`.github/workflows/build.yml`) builds every push and pull r
 `make build` writes two files beside the page:
 
 - `robots.txt` allows every crawler and points to `sitemap.xml`.
-- `sitemap.xml` lists the site's URLs, built from `SITE` in `scripts/build.py`.
+- `sitemap.xml` lists every page: the home page and one page per year. The addresses are built from `SITE` in `scripts/build.py`.
 
 Each sitemap entry carries a last-modified date. The build prints where the date came from:
 
@@ -34,6 +34,20 @@ Each sitemap entry carries a last-modified date. The build prints where the date
 | Full git history | The last commit that touched `data/`, `assets/` or `scripts/build.py`, the three things the page is built from |
 | Shallow clone whose history stops before that commit | The oldest commit it has. The page changed on or before that date |
 | No git | The build date |
+
+## Year pages
+
+Each year also has a page of its own, so a search can land on that year instead of the whole chronology.
+
+- **Address:** `/year/<id>/`, where `<id>` is the year's `id` in `data/years.json`. The first is `/year/before-1964/`. There are 28.
+- **Content:** the same section the home page shows for that year, made by the same `year_html()` call, so the two cannot drift apart. Only the picture addresses differ.
+- **Around it:** a smaller masthead that links home, the year band with this year marked, and links to the earlier and later year.
+- **Head:** its own title (`Osho discourses in 1975: A discourse every morning`), a description cut from the year's lede at 155 characters, itself as canonical, and a `CollectionPage` JSON-LD block that points to the site.
+- **Styles:** the home page's `assets/site.css`, plus `assets/pages.css` for the masthead and the earlier and later links. The home page does not load `pages.css`.
+
+These addresses are public once deployed. Changing a year's `id` changes its address, so add a redirect in `vercel.json` if one ever has to change.
+
+The home page does not link to the year pages yet. Search engines find them through `sitemap.xml`.
 
 ## The picture shown when the site is shared
 

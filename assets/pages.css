@@ -1,0 +1,26 @@
+/* Pages that sit beside the home page (one year, one series). The home page does not load this. */
+
+/* A smaller masthead: the year's own numeral is the big type on these pages. */
+.mast.sub{align-items:center}
+.mast.sub h1{font-size:clamp(1.9rem,4.6vw,3rem);line-height:1.05}
+.mast.sub h1 a{color:inherit;text-decoration:none}
+.mast.sub h1 a:hover{color:var(--cloth)}
+.mast.sub h1 a:focus-visible{outline-color:var(--turmeric)}
+.mast.sub p a{text-decoration-color:var(--turmeric)}
+.mast.sub p a:hover{color:var(--turmeric)}
+.mast.sub p a:focus-visible{outline-color:var(--turmeric)}
+
+/* Earlier and later: two framed links under the year. */
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;padding:2.4rem var(--gutter) 3.2rem}
+.pager a{display:block;color:var(--ink);text-decoration:none;background:#FFF8E6;border:3px solid var(--indigo);box-shadow:0 0 0 3px var(--turmeric);border-radius:14px;padding:1rem 1.2rem;min-height:44px}
+.pager a[rel=next]{text-align:right}
+.pager a:hover{background:var(--cloth-deep);color:var(--ink)}
+.pager small{display:block;font:600 .85rem/1.2 var(--text);color:var(--ink-soft)}
+.pager b{display:block;font:400 1.7rem/1.15 var(--display);color:var(--indigo)}
+.pager span{display:block;font-size:.95rem;line-height:1.35}
+@media (max-width:640px){
+  .pager{grid-template-columns:1fr;gap:1rem}
+  .pager > span{display:none}
+  .pager a[rel=next]{text-align:left}
+}
+@media print{.pager{display:none}}
