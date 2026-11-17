@@ -282,7 +282,10 @@ footer p{max-width:60ch;margin-bottom:.9rem}
   .body tr.month th{display:block;padding:1rem 0 .3rem}
   .media a{min-height:44px;padding:0 .2rem}
   .media{gap:0 1rem;margin-top:.1rem}
-  .years a{min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;padding:0 .6rem}
+  /* The link stays 44px for the thumb; the highlight is drawn 4px inside it, so a two-digit year is a 36px circle. */
+  .years a{min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;padding:0 .6rem;position:relative}
+  .years a[aria-current]{background:none}
+  .years a[aria-current]::before{content:"";position:absolute;inset:4px;border-radius:999px;background:var(--madder);z-index:-1}
   :root{--band:3.6rem}
   .series-size{display:inline;margin:0 0 0 .4rem}
   .body td.what{grid-column:1 / -1}
