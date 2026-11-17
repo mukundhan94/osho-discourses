@@ -46,7 +46,7 @@ Things that span several functions:
 
 Vercel builds and deploys every push to `main` (`vercel.json`). The GitHub workflow only checks that the build passes. So a merge to `main` is a deploy.
 
-`.claude/settings.json` allows the build and check commands without a prompt, and asks before any `vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts the preview with `make serve`.
+`.claude/settings.json` allows the build and check commands without a prompt, and asks before any `vercel` or `npx vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts the preview with `make serve`.
 
 Work on a branch and open a pull request. `vercel.json` also holds the redirects that keep each page at one address; a new kind of page in its own folder needs its own rule there.
 
