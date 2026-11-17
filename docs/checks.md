@@ -17,6 +17,10 @@ Some differences are expected and stay listed:
 - The wiki types some newspaper reports (Samachar Vibhag) as discourses.
 - Three counts differ by one, for reasons given in the note on that row.
 
+## `make bodycheck`
+
+Compares the home page's `<body>` with a saved baseline, byte for byte. See [publishing.md](publishing.md). It covers the home page only, and only the body: changes inside `<head>` pass.
+
 ## `make build`
 
 `make build` fails on any of these:
