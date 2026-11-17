@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make build)",
+      "Bash(make serve)",
+      "Bash(make check)",
+      "Bash(make slugs)",
+      "Bash(make bodycheck:*)",
+      "Bash(make clean)",
+      "Bash(python3 scripts/build.py)",
+      "Bash(python3 scripts/build.py --slugs)"
+    ],
+    "ask": [
+      "Bash(vercel:*)",
+      "Bash(npx vercel:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr edit:*)"
+    ]
+  }
+}
