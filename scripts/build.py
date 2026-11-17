@@ -907,29 +907,44 @@ def load_slugs(series, add=False):
                     raise SystemExit(f"slugs.csv:{n}: key or slug is used more than once")
                 slugs[r["key"]] = r["slug"]
     keys = {x["key"] for x in series}
-    missing = sorted(keys - set(slugs))
-    if missing and add:
-        for key in missing:
-            slug = re.sub(r"[^a-z0-9]+", "-", key).strip("-")
-            if slug in slugs.values():
-                raise SystemExit(f"slugs.csv: {key!r} would repeat the slug {slug!r}; add its row by hand")
-            slugs[key] = slug
-        with open(path, "w", newline="", encoding="utf-8") as f:
-            w = csv.writer(f, lineterminator="\n")
-            w.writerow(["key", "slug"])
-            w.writerows(sorted(slugs.items()))
-        print(f"slugs.csv: added {len(missing)} series")
-    elif missing:
-        raise SystemExit(f"slugs.csv: {len(missing)} series have no address yet, the first is {missing[0]!r}. Run `make slugs`.")
     gone = sorted(set(slugs) - keys)
     if gone:
         raise SystemExit(f"slugs.csv: {gone[0]!r} is no longer a series. Its page is public, so add a redirect "
                          "for /series/" + slugs[gone[0]] + "/ in vercel.json, then remove its row.")
+    missing = sorted(keys - set(slugs))
+    if missing and not add:
+        raise SystemExit(f"slugs.csv: {len(missing)} series have no address yet, the first is {missing[0]!r}. Run `make slugs`.")
+    if missing:
+        for key in missing:
+            slug = re.sub(r"[^a-z0-9]+", "-", key).strip("-")
+            if not slug or slug in slugs.values():
+                raise SystemExit(f"slugs.csv: {key!r} would repeat or empty the slug {slug!r}; add its row by hand")
+            slugs[key] = slug
+        # Write beside the file and swap it in, so an interrupted run cannot leave half a list.
+        draft = path.with_suffix(".csv.new")
+        with open(draft, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(["key", "slug"])
+            w.writerows(sorted(slugs.items()))
+        draft.replace(path)
+        print(f"slugs.csv: added {len(missing)} series")
     return slugs
 
 
 def series_url(x):
     return f"series/{x['slug']}/"
+
+
+def series_start(sort):
+    """The date a sort key really carries: 1966-01-00 is January 1966, 1967-00 is the year 1967."""
+    parts = re.match(r"[0-9]{4}(-[0-9]{2}){0,2}", sort).group().split("-")
+    while len(parts) > 1 and parts[-1] == "00":
+        parts.pop()
+    try:
+        datetime.date(int(parts[0]), int(parts[1]) if len(parts) > 1 else 1, int(parts[2]) if len(parts) > 2 else 1)
+    except ValueError:
+        return ""
+    return "-".join(parts)
 
 
 def series_when(r):
@@ -985,8 +1000,9 @@ def series_page(x, earlier, later, years, places, outlines, media, links):
     }
     if len(langs) == 1:
         data["inLanguage"] = next(iter(langs))
-    if re.fullmatch(r"\d{4}(-\d{2}){0,2}", first_row["sort"][:10].rstrip("abcdefgh")):
-        data["startDate"] = first_row["sort"][:10].rstrip("abcdefgh")
+    start = series_start(first_row["sort"])
+    if start:
+        data["startDate"] = start
     if len({r["place"] for r in rows}) == 1:
         data["locationCreated"] = {"@type": "Place", "name": rows[0]["place"]}
     if x["media"]["wiki_url"]:
@@ -997,15 +1013,15 @@ def series_page(x, earlier, later, years, places, outlines, media, links):
     head = head_html(title, description, url, title, description, ld, root="/", extra_css=("pages.css",))
     band = year_band(years, lambda y: "/" + year_url(y), current=first_year["id"], last='<a href="/">All years</a>')
 
+    summary, show_lang = summary_for(rows)  # show each row's language only when the series mixes them
     body_rows = []
     for y in x["years"]:
         mine = [(r, rid) for yy, r, rid in x["entries"] if yy is y]
         body_rows.append(f'<tr class="month"><th colspan="4" scope="rowgroup"><a href="/{e(year_url(y))}#{mine[0][1]}">{e(y["label"])}</a></th></tr>')
         last_place = None
         for r, rid in mine:
-            body_rows.append(row_html(r, False, media, links, same_place=(r["place"] == last_place), rid=rid))
+            body_rows.append(row_html(r, show_lang, media, links, same_place=(r["place"] == last_place), rid=rid))
             last_place = r["place"]
-    summary, _ = summary_for(rows)
     _, _, ranked = town_weights(rows)
     towns_line = " ".join(f'<span class="keep">{"· " if i else ""}{e(t)}</span>' for i, t in enumerate(ranked[:4]))
     a, b = x["span"].partition(" to ")[::2]
@@ -1171,6 +1187,11 @@ def main():
             sample.append(html_row)
     tour = tour_html("".join(sample))
     grand = {"rows": len(all_rows), "towns": len({t for r in all_rows for t in r["town_list"]})}
+    series = collect_series(years, rows_by_year, media)
+    slugs = load_slugs(series, add="--slugs" in sys.argv)
+    for x in series:
+        x["slug"] = slugs[x["key"]]
+    series_urls = {x["key"]: "/" + series_url(x) for x in series}
     # Empty _site/ rather than delete it, so a local server serving it keeps working.
     OUT.mkdir(exist_ok=True)
     for child in OUT.iterdir():
@@ -1181,11 +1202,6 @@ def main():
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n", encoding="utf-8")
     lastmod, lastmod_source = page_lastmod()
     pages = {"index.html": page(years, sections, grand, outlines, tour)}
-    series = collect_series(years, rows_by_year, media)
-    slugs = load_slugs(series, add="--slugs" in sys.argv)
-    for x in series:
-        x["slug"] = slugs[x["key"]]
-    series_urls = {x["key"]: "/" + series_url(x) for x in series}
     for y in years:
         # The home page's section again, this time with each series title leading to its page.
         section = year_html(y, rows_by_year[y["id"]], places, outlines, media, links, series_urls)
