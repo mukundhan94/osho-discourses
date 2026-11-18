@@ -38,3 +38,8 @@ jobs:
         run: npm test
       - name: Type-check and build
         run: npm run build
+      - name: Compare the ported pages with the Python build
+        working-directory: .
+        run: |
+          python3 scripts/build.py
+          python3 scripts/parity_check.py --strict --pages 'year/*'

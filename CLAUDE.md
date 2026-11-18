@@ -21,11 +21,18 @@ This is a non-commercial reference library: it collects what was spoken, when an
 
 The site build is Python 3 standard library only. Do not add dependencies to it.
 
-`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: it has no pages so far, only the Astro setup, the data layer and the screenshot check. `make build` and `scripts/build.py` remain the site until the switch.
+`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: so far it builds the 28 year pages, beside the data layer and the screenshot check. `make build` and `scripts/build.py` remain the site until the switch.
 
 Node is pinned to 24 in `.nvmrc`; run `nvm use` before any `npm` or `make web`, `make shots` command. Packages in `web/package.json` are pinned to exact versions. `npm --prefix web run check` type-checks without building.
 
 `web/src/data/` is the TypeScript port of how `build.py` loads and checks `data/`: `loadSite()` in `index.ts` returns the years, rows, places, media, links and series. It must load the same values as `build.py` and stop on the same faults with the same message. `npm --prefix web test` proves that against `scripts/data_dump.py`, on the real data and on the broken copies listed in `web/tests/fixtures/data-cases.json`. A change to a loading rule or a check in `build.py` needs the same change there, and a case in that file.
+
+Pages in `web/` are ported, not redesigned: same elements, same class names, same text, so `assets/site.css` applies unchanged. `web/src/pages/` and `web/src/layouts/` are Astro (the document, the head, the inline scripts); everything inside `<body>` is React in `web/src/components/`, rendered to HTML at build time and sent with no script; logic with no markup is in `web/src/lib/`. Two rules that are easy to break:
+
+- **One string per run of text.** In JSX, write `{`All in ${town}`}`, never `All in {town}`. React puts an empty comment between a value and the text beside it, the browser then shapes the two pieces apart, and the pixels move.
+- **Format numbers with `lib/format.ts`.** Python rounds an exact half to the even digit; `toFixed()` and `Math.round()` do not.
+
+To compare the ported pages with the Python build, run `make build` and `make web`, then `python3 scripts/parity_check.py --strict --pages 'year/*'`. CI does the same.
 
 The site build has no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
 

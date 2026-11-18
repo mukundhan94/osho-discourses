@@ -24,7 +24,8 @@ export default defineConfig({
     // The folder is the server's working directory, so its path never passes through a shell.
     command: `python3 -m http.server ${port} --bind 127.0.0.1`,
     cwd: dir,
-    url: `http://127.0.0.1:${port}/robots.txt`,
+    // Ready once the stylesheet is served: every build has it, at any stage of the move.
+    url: `http://127.0.0.1:${port}/assets/site.css`,
     reuseExistingServer: false,
   },
   projects: [

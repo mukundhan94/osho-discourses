@@ -31,17 +31,34 @@ export type Row = {
   townList: string[];
 };
 
-export type Photo = { file: string; [key: string]: unknown };
+export type Photo = {
+  file: string;
+  alt: string;
+  caption: string;
+  author: string;
+  licence: string;
+  licence_url: string;
+  source_url: string;
+  /** The words before the author's name. Left out, it reads "Recent photograph by". */
+  credit?: string;
+};
 
 /** One entry of data/years.json, with the defaults build.py fills in. */
 export type Year = {
   id: string;
   label: string;
   numeral: string;
+  /** A second line under the numeral, such as "to 1963". */
+  numeral_sub?: string;
   nav: string;
   source: string;
+  heading: string;
+  lede: string;
   photo?: Photo;
-  [key: string]: unknown;
+  /** Join the map's places with a dashed line, in the order of the rows. */
+  route?: boolean;
+  /** Lines of [date, text] shown in place of the table. */
+  closing?: [string, string][];
 };
 
 /** One line of data/media.csv: every column is kept as text. */
@@ -86,7 +103,17 @@ export function loadRows(root: string, yearId: string, places: Places): Row[] {
 export function loadMedia(root: string): Map<string, Media> {
   const file = path.join(root, "data", "media.csv");
   if (!fs.existsSync(file)) return new Map();
-  return new Map(records(readTable(file)).map((r) => [r["key"]!, r]));
+  const rows = records(readTable(file));
+  // The pages do sums with these three. build.py stops on a traceback where it meets a
+  // bad one; this stops sooner, on any line, and says which.
+  rows.forEach((r, i) => {
+    for (const column of ["talks", "video", "minutes"]) {
+      if (!/^[0-9]*$/.test(r[column] ?? "")) {
+        throw new DataError(`media.csv:${i + 2}: ${column} must be a whole number or empty, not ${repr(r[column]!)}`);
+      }
+    }
+  });
+  return new Map(rows.map((r) => [r["key"]!, r]));
 }
 
 /** Hand-added links from data/links.csv, grouped by normalised series title, in file order. */
@@ -116,7 +143,11 @@ export function loadYears(root: string): Year[] {
   const raw = JSON.parse(fs.readFileSync(path.join(root, "data", "years.json"), "utf8")) as Partial<Year>[];
   return raw.map((y) => {
     const id = y.id as string;
-    return { ...y, id, label: y.label ?? id, numeral: y.numeral ?? id, nav: y.nav ?? id.slice(-2), source: y.source ?? `${WIKI}_${id}` };
+    // Every year section prints both. build.py stops on a traceback without them.
+    for (const field of ["heading", "lede"] as const) {
+      if (typeof y[field] !== "string" || !y[field]) throw new DataError(`years.json: ${id}: ${field} is required`);
+    }
+    return { ...y, id, label: y.label ?? id, numeral: y.numeral ?? id, nav: y.nav ?? id.slice(-2), source: y.source ?? `${WIKI}_${id}` } as Year;
   });
 }
 

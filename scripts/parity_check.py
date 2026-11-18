@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Compare two built copies of the site. Standard library only.
 
-Usage: python3 scripts/parity_check.py [OLD] [NEW]
-  OLD  the reference build (default: _site)
-  NEW  the build to check (default: web/dist)
+Usage: python3 scripts/parity_check.py [--strict] [--pages GLOB]... [OLD] [NEW]
+  OLD            the reference build (default: _site)
+  NEW            the build to check (default: web/dist)
+  --strict       also require every element, attribute and piece of text to match
+  --pages GLOB   compare only the pages whose path matches, such as 'year/*'.
+                 May be given more than once. robots.txt and sitemap.xml are
+                 then left out, since they describe the whole site.
 
 Used while the build moves from Python to React: the new build must give
 search engines and readers the same pages. This compares what they see, not
@@ -14,9 +18,15 @@ the markup underneath:
                       links, the visible text, and the attributes that carry
                       words or meaning (labels, alt text, roles, link rel)
 
+With --strict the markup itself is compared too, after collapsing whitespace:
+the same elements in the same order, with the same attributes and text. That
+holds only while the new build keeps the old one's structure and class names,
+which is how the pages are being ported.
+
 Prints every difference and exits 1 if there is any. How the pages look is
 checked separately, by the screenshot test in web/.
 """
+import fnmatch
 import json
 import re
 import sys
@@ -35,6 +45,8 @@ INLINE = {"a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "del", "dfn", 
 SPOKEN = ("alt", "title", "placeholder", "role", "scope", "lang", "for", "rel", "target", "data-unit", "data-l")
 # Only these carry a ?v=<hash> cache marker. Any other address is compared whole.
 HASHED = {("link", "href"), ("script", "src")}
+# Elements that never have a closing tag, however they are written.
+VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 # Per difference kind, how many examples to print before summarising the rest.
 SHOWN = 5
 
@@ -56,10 +68,12 @@ class Page(HTMLParser):
         self._svg = 0
         self._in_title = False
         self._ld = None
+        self.dom = []  # for --strict: ("<", tag, attributes), (">", tag), ("text", words), ("raw", script or style)
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         self._boundary(tag)
+        self.dom.append(("<", tag, tuple(sorted((n, self._plain(tag, a, n, v)) for n, v in attrs))))
         if a.get("id"):
             self.ids.append(a["id"])
         for name in ("href", "src"):
@@ -88,6 +102,8 @@ class Page(HTMLParser):
 
     def handle_endtag(self, tag):
         self._boundary(tag)
+        if tag not in VOID:
+            self.dom.append((">", tag))
         if tag == "title":
             self._in_title = False
         if tag == "svg" and self._svg:
@@ -104,11 +120,55 @@ class Page(HTMLParser):
 
     def handle_data(self, data):
         if self._ld is not None:
-            self._ld.append(data)
-        elif self._in_title:
+            self._ld.append(data)  # compared as data, under "json-ld"
+            return
+        self.dom.append(("raw" if self._skip else "text", data))
+        if self._in_title:
             self.title += data
         elif not self._skip:
             self.text.append(data)
+
+    def handle_comment(self, data):
+        self.dom.append(("comment",))
+
+    @staticmethod
+    def _plain(tag, a, name, value):
+        """An attribute value with what may differ taken out: an absent value, and a cache marker."""
+        value = "" if value is None else value
+        if (tag, name) in HASHED or (tag == "meta" and name == "content" and a.get("property") == "og:image"):
+            return versionless(value)
+        return value
+
+    def markup(self):
+        """The page as a list of elements and text, with whitespace that cannot show removed."""
+        # A comment between two pieces of text stays, as "split": the browser shapes each
+        # piece on its own, so letters either side of it are no longer kerned together.
+        # React writes such a comment between two adjacent values. Any other comment goes.
+        merged = []
+        for i, token in enumerate(self.dom):
+            if token[0] == "comment":
+                before = merged[-1][0] if merged else None
+                after = self.dom[i + 1][0] if i + 1 < len(self.dom) else None
+                if before == "text" and after == "text":
+                    merged.append(("split",))
+            else:
+                merged.append(token)
+
+        def edge(token):  # a space shows only between two things on the same line of text
+            return token is None or (token[0] in ("<", ">") and token[1] not in INLINE | {"svg", "img"}) or token[0] == "raw"
+
+        out = []
+        for i, token in enumerate(merged):
+            if token[0] == "raw":
+                token = ("raw", token[1].strip())
+            elif token[0] == "text":
+                words = " ".join(token[1].split())
+                lead = " " if token[1][:1].isspace() and not edge(merged[i - 1] if i else None) else ""
+                trail = " " if token[1][-1:].isspace() and not edge(merged[i + 1] if i + 1 < len(merged) else None) else ""
+                token = ("text", (lead + words + trail) if words else (lead and trail))
+            if token[0] in ("<", ">", "split") or token[1] != "":
+                out.append(token)
+        return out
 
     def summary(self, path):
         ld = []
@@ -127,6 +187,7 @@ class Page(HTMLParser):
             "links": self.links,
             "labels and roles": self.spoken,
             "text": " ".join("".join(self.text).split()),
+            "markup": self.markup(),
         }
 
 
@@ -172,6 +233,10 @@ def describe(kind, old, new):
         return "; ".join(parts)
     if kind == "text":
         return first_difference(old, new)
+    if kind == "markup":
+        n = next((i for i, (x, y) in enumerate(zip(old, new)) if x != y), min(len(old), len(new)))
+        show = lambda tokens: " ".join(repr(t) for t in tokens[max(0, n - 2):n + 2])  # noqa: E731
+        return f"at item {n} of {len(old)}: {show(old)} became {show(new)}"
     if kind == "json-ld":
         return first_difference(json.dumps(old, sort_keys=True, ensure_ascii=False), json.dumps(new, sort_keys=True, ensure_ascii=False))
     return f"{old!r} became {new!r}"
@@ -179,6 +244,16 @@ def describe(kind, old, new):
 
 def main():
     args = sys.argv[1:]
+    strict = "--strict" in args
+    args = [a for a in args if a != "--strict"]
+    only = []
+    while "--pages" in args:
+        at = args.index("--pages")
+        if at + 1 >= len(args):
+            raise SystemExit("--pages needs a pattern, such as 'year/*'")
+        only.append(args[at + 1])
+        del args[at:at + 2]
+    wanted = lambda path: not only or any(fnmatch.fnmatch(path, pattern) for pattern in only)  # noqa: E731
     old_dir = Path(args[0]) if args else ROOT / "_site"
     new_dir = Path(args[1]) if len(args) > 1 else ROOT / "web" / "dist"
     for folder in (old_dir, new_dir):
@@ -190,28 +265,34 @@ def main():
     def report(kind, message):
         found.setdefault(kind, []).append(message)
 
-    old_pages, new_pages = pages_in(old_dir), pages_in(new_dir)
+    old_pages = {path: p for path, p in pages_in(old_dir).items() if wanted(path)}
+    new_pages = {path: p for path, p in pages_in(new_dir).items() if wanted(path)}
+    if only and not old_pages:
+        raise SystemExit(f"no page in {old_dir} matches {' or '.join(only)}")
     for path in sorted(set(old_pages) - set(new_pages)):
         report("page missing from the new build", path)
     for path in sorted(set(new_pages) - set(old_pages)):
         report("page only in the new build", path)
 
     old_robots, new_robots = old_dir / "robots.txt", new_dir / "robots.txt"
-    if (old_robots.read_bytes() if old_robots.exists() else None) != (new_robots.read_bytes() if new_robots.exists() else None):
+    if not only and (old_robots.read_bytes() if old_robots.exists() else None) != (new_robots.read_bytes() if new_robots.exists() else None):
         report("robots.txt", "the two files differ")
     old_map, new_map = sitemap_urls(old_dir), sitemap_urls(new_dir)
-    if old_map != new_map:
+    if not only and old_map != new_map:
         report("sitemap.xml", describe("links", old_map or [], new_map or []))
 
     shared = sorted(set(old_pages) & set(new_pages))
     for path in shared:
         old, new = read_page(old_pages[path]), read_page(new_pages[path])
         for kind in old:
+            if kind == "markup" and not strict:
+                continue
             if old[kind] != new[kind]:
                 report(kind, f"{path}: {describe(kind, old[kind], new[kind])}")
 
     if not found:
-        print(f"parity: {len(shared)} pages match ({old_dir} and {new_dir})")
+        how = "match in every element" if strict else "match"
+        print(f"parity: {len(shared)} pages {how} ({old_dir} and {new_dir})")
         return
     total = sum(len(v) for v in found.values())
     for kind, messages in found.items():
