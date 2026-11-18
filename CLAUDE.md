@@ -21,7 +21,7 @@ This is a non-commercial reference library: it collects what was spoken, when an
 
 The site build is Python 3 standard library only. Do not add dependencies to it.
 
-`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: so far it builds the 28 year pages, beside the data layer and the screenshot check. `make build` and `scripts/build.py` remain the site until the switch.
+`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: so far it builds the 28 year pages and the 546 series pages, beside the data layer and the screenshot check. The home page, `robots.txt` and the sitemap are still to come. `make build` and `scripts/build.py` remain the site until the switch.
 
 Node is pinned to 24 in `.nvmrc`; run `nvm use` before any `npm` or `make web`, `make shots` command. Packages in `web/package.json` are pinned to exact versions. `npm --prefix web run check` type-checks without building.
 
@@ -32,7 +32,7 @@ Pages in `web/` are ported, not redesigned: same elements, same class names, sam
 - **One string per run of text.** In JSX, write `{`All in ${town}`}`, never `All in {town}`. React puts an empty comment between a value and the text beside it, the browser then shapes the two pieces apart, and the pixels move.
 - **Format numbers with `lib/format.ts`.** Python rounds an exact half to the even digit; `toFixed()` and `Math.round()` do not.
 
-To compare the ported pages with the Python build, run `make build` and `make web`, then `python3 scripts/parity_check.py --strict --pages 'year/*'`. CI does the same.
+To compare the ported pages with the Python build, run `make build` and `make web`, then `python3 scripts/parity_check.py --strict --pages 'year/*' --pages 'series/*'`. CI does the same.
 
 The site build has no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
 

@@ -1,0 +1,40 @@
+---
+// One series on its own address: every row it has across the years, with the same links.
+import { SeriesPage } from "../../components/SeriesPage.tsx";
+import type { Series } from "../../data/index.ts";
+import Page from "../../layouts/Page.astro";
+import { getBuild } from "../../lib/build.ts";
+import { seriesLede, seriesStart, seriesTitle, seriesUrl } from "../../lib/series.ts";
+import { clip, ldText, SITE } from "../../lib/site.ts";
+
+export function getStaticPaths() {
+  return getBuild().site.series.map((x) => ({ params: { slug: x.slug } }));
+}
+
+const { site, outlines } = getBuild();
+const x = site.series.find((s) => s.slug === Astro.params.slug) as Series;
+const rows = x.entries.map((e) => e.row);
+const url = SITE + seriesUrl(x);
+const title = seriesTitle(x);
+const description = clip(`${x.name}: ${seriesLede(x)}`);
+const langs = new Set(rows.map((r) => r.lang).filter(Boolean));
+const start = seriesStart(rows[0]!.sort);
+const onePlace = new Set(rows.map((r) => r.place)).size === 1;
+const ld = ldText({
+  "@context": "https://schema.org",
+  "@type": "CreativeWorkSeries",
+  "@id": url,
+  url,
+  name: x.name,
+  description,
+  author: { "@type": "Person", name: "Osho" },
+  isPartOf: { "@id": `${SITE}#website` },
+  ...(langs.size === 1 ? { inLanguage: [...langs][0] } : {}),
+  ...(start ? { startDate: start } : {}),
+  ...(onePlace ? { locationCreated: { "@type": "Place", name: rows[0]!.place } } : {}),
+  ...(x.media["wiki_url"] ? { sameAs: x.media["wiki_url"] } : {}),
+});
+---
+<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]}>
+<SeriesPage site={site} series={x} outlines={outlines} />
+</Page>
