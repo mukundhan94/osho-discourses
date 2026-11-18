@@ -21,9 +21,11 @@ This is a non-commercial reference library: it collects what was spoken, when an
 
 The site build is Python 3 standard library only. Do not add dependencies to it.
 
-`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: it has no pages so far, only the Astro setup and the screenshot check. `make build` and `scripts/build.py` remain the site until the switch.
+`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: it has no pages so far, only the Astro setup, the data layer and the screenshot check. `make build` and `scripts/build.py` remain the site until the switch.
 
 Node is pinned to 24 in `.nvmrc`; run `nvm use` before any `npm` or `make web`, `make shots` command. Packages in `web/package.json` are pinned to exact versions. `npm --prefix web run check` type-checks without building.
+
+`web/src/data/` is the TypeScript port of how `build.py` loads and checks `data/`: `loadSite()` in `index.ts` returns the years, rows, places, media, links and series. It must load the same values as `build.py` and stop on the same faults with the same message. `npm --prefix web test` proves that against `scripts/data_dump.py`, on the real data and on the broken copies listed in `web/tests/fixtures/data-cases.json`. A change to a loading rule or a check in `build.py` needs the same change there, and a case in that file.
 
 The site build has no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
 
@@ -47,7 +49,7 @@ Things that span several functions:
 - **Styles and script.** `assets/site.css` styles every page. `assets/pages.css` is loaded only by year and series pages. `assets/site.js` (year band tracking, series search, reading tour) is loaded only by the home page. Stylesheet and script links carry a content hash, so editing either changes the page's HTML.
 - **Sitemap dates** come from the last git commit touching `PAGE_SOURCES` (`data`, `assets`, `scripts/build.py`).
 
-`scripts/wiki_check.py` and `scripts/media_links.py` are data tools, not part of the build. `scripts/og.html` is the source of the social preview images in `assets/og/`.
+`scripts/wiki_check.py` and `scripts/media_links.py` are data tools, not part of the build. `scripts/data_dump.py` prints what `build.py` loads, for the test in `web/`. `scripts/og.html` is the source of the social preview images in `assets/og/`.
 
 ## Publishing
 

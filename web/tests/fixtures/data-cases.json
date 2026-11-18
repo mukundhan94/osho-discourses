@@ -1,0 +1,325 @@
+{
+  "about": "Edits to a copy of data/, used by web/src/data/data.test.ts. Each 'broken' case must stop scripts/build.py's loader and the TypeScript loader with the same message, which must contain 'expect'. Each 'valid' case must load to the same values in both.",
+  "broken": [
+    {
+      "name": "a talks file with a wrong header",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "sort,dates,title",
+          "replace": "date,dates,title"
+        }
+      ],
+      "expect": "1964.csv: header must be"
+    },
+    {
+      "name": "an unknown kind",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": ",2,series,,Private talks",
+          "replace": ",2,lecture,,Private talks"
+        }
+      ],
+      "expect": "1964.csv:2: kind must be one of"
+    },
+    {
+      "name": "an unknown lang",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Private talks,hi",
+          "replace": "Private talks,fr"
+        }
+      ],
+      "expect": "1964.csv:2: lang must be"
+    },
+    {
+      "name": "unsure that is not empty or y",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": ",2,series,,Private",
+          "replace": ",2,series,yes,Private"
+        }
+      ],
+      "expect": "1964.csv:2: unsure must be"
+    },
+    {
+      "name": "an em-dash in a row",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Private talks",
+          "replace": "Private — talks"
+        }
+      ],
+      "expect": "1964.csv:2: em-dash found"
+    },
+    {
+      "name": "a row one field short",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Upasana Ke Kshan,Bombay,Bombay",
+          "replace": "Upasana Ke Kshan,Bombay"
+        }
+      ],
+      "expect": "1964.csv:2: wrong number of fields"
+    },
+    {
+      "name": "a row one field long",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Private talks,hi",
+          "replace": "Private talks,hi,extra"
+        }
+      ],
+      "expect": "1964.csv:2: wrong number of fields"
+    },
+    {
+      "name": "a town missing from places.csv",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Kshan,Bombay,Bombay,2",
+          "replace": "Kshan,Bombay,Atlantis,2"
+        }
+      ],
+      "expect": "1964.csv:2: town 'Atlantis' is not in places.csv"
+    },
+    {
+      "name": "a blank line, then a fault on the next row",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Private talks,hi\n",
+          "replace": "Private talks,hi\n\n"
+        },
+        {
+          "file": "talks/1964.csv",
+          "find": "\"Sion, Bombay\",Bombay,1,series",
+          "replace": "\"Sion, Bombay\",Bombay,1,lecture"
+        }
+      ],
+      "expect": "1964.csv:3: kind must be one of"
+    },
+    {
+      "name": "a photograph that is not in assets/img/",
+      "edits": [
+        {
+          "file": "years.json",
+          "find": "\"file\": \"jabalpur.webp\"",
+          "replace": "\"file\": \"missing.webp\""
+        }
+      ],
+      "expect": "photo missing.webp is not in assets/img/"
+    },
+    {
+      "name": "a photograph that is not credited",
+      "edits": [
+        {
+          "file": "years.json",
+          "find": "\"file\": \"jabalpur.webp\"",
+          "replace": "\"file\": \"CREDITS.md\""
+        }
+      ],
+      "expect": "is not listed in assets/img/CREDITS.md"
+    },
+    {
+      "name": "a year id used twice",
+      "edits": [
+        {
+          "file": "years.json",
+          "find": "\"id\": \"1965\"",
+          "replace": "\"id\": \"1964\""
+        }
+      ],
+      "expect": "years.json: the id '1964' is used more than once"
+    },
+    {
+      "name": "years out of date order",
+      "edits": [
+        {
+          "file": "years.json",
+          "find": "\"id\": \"1964\",",
+          "replace": "\"id\": \"1964\", \"numeral\": \"1999\","
+        }
+      ],
+      "expect": "years.json: the years must be in date order"
+    },
+    {
+      "name": "a year with no rows",
+      "edits": [
+        {
+          "file": "talks/1990.csv",
+          "keepLines": 1
+        }
+      ],
+      "expect": "1990: no rows"
+    },
+    {
+      "name": "a series with no row in slugs.csv",
+      "edits": [
+        {
+          "file": "slugs.csv",
+          "find": "a rose is a rose is a rose,a-rose-is-a-rose-is-a-rose\n",
+          "replace": ""
+        }
+      ],
+      "expect": "1 series have no address yet, the first is 'a rose is a rose is a rose'"
+    },
+    {
+      "name": "a slugs.csv row whose series is gone",
+      "edits": [
+        {
+          "file": "slugs.csv",
+          "append": "not a series,not-a-series"
+        }
+      ],
+      "expect": "'not a series' is no longer a series"
+    },
+    {
+      "name": "a slug used twice",
+      "edits": [
+        {
+          "file": "slugs.csv",
+          "append": "zzz other,a-rose-is-a-rose-is-a-rose"
+        }
+      ],
+      "expect": "key or slug is used more than once"
+    },
+    {
+      "name": "a slug that is not lower-case and hyphens",
+      "edits": [
+        {
+          "file": "slugs.csv",
+          "find": ",a-rose-is-a-rose-is-a-rose",
+          "replace": ",A_Rose"
+        }
+      ],
+      "expect": "slugs.csv:3: slug must be lower-case"
+    },
+    {
+      "name": "slugs.csv with a wrong header",
+      "edits": [
+        {
+          "file": "slugs.csv",
+          "find": "key,slug",
+          "replace": "key,address"
+        }
+      ],
+      "expect": "slugs.csv: header must be key,slug"
+    },
+    {
+      "name": "links.csv with a wrong header",
+      "edits": [
+        {
+          "file": "links.csv",
+          "find": "title,kind,label,url",
+          "replace": "title,kind,text,url"
+        }
+      ],
+      "expect": "links.csv: header must be"
+    },
+    {
+      "name": "a link with no label",
+      "edits": [
+        {
+          "file": "links.csv",
+          "append": "Sadhana Path,listen,,https://example.org/a"
+        }
+      ],
+      "expect": "links.csv:2: title and label are required"
+    },
+    {
+      "name": "a link of an unknown kind",
+      "edits": [
+        {
+          "file": "links.csv",
+          "append": "Sadhana Path,buy,Shop,https://example.org/a"
+        }
+      ],
+      "expect": "links.csv:2: kind must be one of"
+    },
+    {
+      "name": "a link that is not https",
+      "edits": [
+        {
+          "file": "links.csv",
+          "append": "Sadhana Path,listen,Listen,http://example.org/a"
+        }
+      ],
+      "expect": "links.csv:2: url must start with https://"
+    },
+    {
+      "name": "a link whose title matches no series",
+      "edits": [
+        {
+          "file": "links.csv",
+          "append": "No Such Series,listen,Listen,https://example.org/a"
+        }
+      ],
+      "expect": "links.csv: no series is titled 'No Such Series'"
+    }
+  ],
+  "valid": [
+    {
+      "name": "a valid hand-added link",
+      "edits": [
+        {
+          "file": "links.csv",
+          "append": "Sadhana Path,listen,Listen,https://example.org/a"
+        }
+      ]
+    },
+    {
+      "name": "a quoted field with a comma and doubled quotes",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Private talks",
+          "replace": "\"Private \"\"talks\"\", so\""
+        }
+      ]
+    },
+    {
+      "name": "Windows line endings",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "crlf": true
+        }
+      ]
+    },
+    {
+      "name": "no newline at the end of a file",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "chomp": true
+        }
+      ]
+    },
+    {
+      "name": "two rows that share a sort key",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "1964-04-24b,",
+          "replace": "1964-04-24a,"
+        }
+      ]
+    },
+    {
+      "name": "a title that only starts like a series name",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "append": "1964-12-31z,31 Dec,Sadhana Pathway,Bombay,Bombay,1,untitled,,,hi"
+        }
+      ]
+    }
+  ]
+}
