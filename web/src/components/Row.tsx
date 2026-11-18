@@ -9,7 +9,9 @@ import { Unsure } from "./Unsure.tsx";
 export type RowProps = {
   row: RowData;
   /** The id the row carries on the page, so a link can point at it. */
-  rid: string;
+  rid?: string;
+  /** For the example rows of the reading tour: which cards light this row up. It then has no id. */
+  tourRow?: string;
   /** Show the row's language. Set only where a table mixes languages. */
   showLang: boolean;
   /** The place repeats the row above, so it is shown as a ditto mark. */
@@ -35,7 +37,7 @@ function SeriesSize({ title, media, rowTalks }: { title: string; media: Map<stri
 }
 
 /** One line of a year's table: dates, title with its note and links, place, talks. */
-export function Row({ row: r, rid, showLang, samePlace = false, media, links, seriesUrls }: RowProps) {
+export function Row({ row: r, rid, tourRow, showLang, samePlace = false, media, links, seriesUrls }: RowProps) {
   let note = strip(r.note);
   const label = KIND_LABEL[r.kind];
   // Say what kind of row it is, unless its own words already do.
@@ -59,7 +61,7 @@ export function Row({ row: r, rid, showLang, samePlace = false, media, links, se
   const found = seriesUrls ? mediaFor(r.title, media) : undefined;
   const href = found ? seriesUrls!.get(found["key"]!) : undefined;
   return (
-    <tr className={r.kind} id={rid}>
+    <tr className={r.kind} id={tourRow ? undefined : rid} data-tour-row={tourRow}>
       <td className="dates">{r.dates}{r.unsure ? <Unsure /> : null}</td>
       <td className="what">
         <span className="title">{href ? <a href={href}>{title}</a> : title}</span>

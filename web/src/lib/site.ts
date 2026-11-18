@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { Year } from "../data/index.ts";
-import { REPO_ROOT } from "../data/index.ts";
+import { DataError, REPO_ROOT } from "../data/index.ts";
+import { repr } from "../data/errors.ts";
 
 export const SITE = "https://oshodiscourses.com/";
 export const SITE_NAME = "Osho: the discourses";
@@ -46,4 +47,43 @@ export function clip(text: string, limit = 155): string {
 /** Structured data as the text of a script element. "<" cannot end the element early once it is an escape. */
 export function ldText(data: unknown): string {
   return JSON.stringify(data).replaceAll("<", "\\u003c");
+}
+
+/** "1954 to 1990": the first and last years the site covers. */
+export function siteSpan(years: Year[]): string {
+  return `${years[0]!.numeral} to ${years.at(-1)!.numeral}`;
+}
+
+/** The home page's structured data: what the site is, and the collection it holds. */
+export function homeLd(years: Year[]): unknown {
+  const first = years[0]!.numeral;
+  const last = years.at(-1)!.numeral;
+  if (!/^[0-9]{4}$/.test(first) || !/^[0-9]{4}$/.test(last) || first > last) {
+    throw new DataError(`years.json: the first and last numerals must be years in order, got ${repr(first)} and ${repr(last)}`);
+  }
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${SITE}#website`,
+        name: SITE_NAME,
+        url: SITE,
+        description: `A free, non-commercial library of when and where Osho spoke, year by year from ${first} to ${last}, with links to recordings hosted by others.`,
+        inLanguage: "en",
+      },
+      {
+        "@type": "Dataset",
+        "@id": `${SITE}#dataset`,
+        name: `Chronology of Osho's discourses, ${first} to ${last}`,
+        description: `Every discourse listed on the Sannyas Wiki year timelines from ${first} to ${last}, in date order: the series, the dates, the place and the number of talks.`,
+        url: SITE,
+        license: "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+        temporalCoverage: `${first}/${last}`,
+        creator: { "@type": "Organization", name: "oshodiscourses.com", url: SITE },
+        isBasedOn: WIKI,
+        isAccessibleForFree: true,
+      },
+    ],
+  };
 }

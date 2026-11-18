@@ -42,4 +42,4 @@ jobs:
         working-directory: .
         run: |
           python3 scripts/build.py
-          python3 scripts/parity_check.py --strict --pages 'year/*' --pages 'series/*'
+          python3 scripts/parity_check.py --strict --pages 'index.html' --pages 'year/*' --pages 'series/*'
