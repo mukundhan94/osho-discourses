@@ -1,11 +1,14 @@
 ---
 // One series on its own address: every row it has across the years, with the same links.
-import { SeriesPage } from "../../components/SeriesPage.tsx";
+import { Footer, Pager, Sprite } from "../../components/Chrome.tsx";
+import { YearBand } from "../../components/islands/YearBand.tsx";
+import { SeriesSection } from "../../components/SeriesSection.tsx";
 import type { Series } from "../../data/index.ts";
 import Page from "../../layouts/Page.astro";
 import { getBuild } from "../../lib/build.ts";
+import { outlineFor } from "../../lib/maps.ts";
 import { seriesLede, seriesStart, seriesTitle, seriesUrl } from "../../lib/series.ts";
-import { clip, ldText, SITE } from "../../lib/site.ts";
+import { clip, ldText, SITE, SITE_NAME, yearUrl } from "../../lib/site.ts";
 
 export function getStaticPaths() {
   return getBuild().site.series.map((x) => ({ params: { slug: x.slug } }));
@@ -14,6 +17,8 @@ export function getStaticPaths() {
 const { site, outlines } = getBuild();
 const x = site.series.find((s) => s.slug === Astro.params.slug) as Series;
 const rows = x.entries.map((e) => e.row);
+const first = x.entries[0]!;
+const at = site.series.indexOf(x);
 const url = SITE + seriesUrl(x);
 const title = seriesTitle(x);
 const description = clip(`${x.name}: ${seriesLede(x)}`);
@@ -34,7 +39,23 @@ const ld = ldText({
   ...(onePlace ? { locationCreated: { "@type": "Place", name: rows[0]!.place } } : {}),
   ...(x.media["wiki_url"] ? { sameAs: x.media["wiki_url"] } : {}),
 });
+// A series in one town gets no map, so it needs no outline.
+const need = new Set(rows.flatMap((r) => r.townList)).size > 1 ? outlineFor(rows, site.places) : undefined;
+const step = (s: Series | undefined) => s && { href: "/" + seriesUrl(s), label: s.name, detail: s.span };
 ---
-<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]} script="band">
-<SeriesPage site={site} series={x} outlines={outlines} />
+<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]}>
+<Sprite outlines={outlines} need={need ? [need] : []} />
+<a class="skip" href="#main">Skip to the series</a>
+<header class="mast sub">
+  <h1><a href="/">{SITE_NAME}</a><br><span>{x.name}</span></h1>
+  <div class="intro-side">
+  <p>Part of a chronology of every discourse listed on the Sannyas Wiki. <a href={`/${yearUrl(first.year)}#${first.rid}`}>See it in {first.year.label}</a>.</p>
+  </div>
+</header>
+<YearBand client:load current={first.year.id} items={site.years.map((y) => ({ id: y.id, href: "/" + yearUrl(y), label: y.label, nav: y.nav }))} last={{ href: "/", label: "All years" }} />
+<main id="main" class="solo">
+<SeriesSection site={site} series={x} />
+<Pager label="Earlier and later series" earlier={step(site.series[at - 1])} later={step(site.series[at + 1])} words={["Earlier series", "Later series"]} />
+</main>
+<Footer />
 </Page>

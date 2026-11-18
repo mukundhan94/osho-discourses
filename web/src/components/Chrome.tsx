@@ -1,7 +1,5 @@
-// The parts every page has around its content: the shared shapes, the row of years,
-// the earlier and later links, and the footer.
-import type { ReactNode } from "react";
-import type { Year } from "../data/index.ts";
+// The parts every page has around its content that never change in the browser: the
+// shared shapes, the earlier and later links, and the footer.
 import { REPO, SOURCES } from "../lib/site.ts";
 
 export type Outlines = { india: string; world: string };
@@ -16,33 +14,6 @@ export function Sprite({ outlines, need }: { outlines: Outlines; need: (keyof Ou
       <symbol id="i-list" viewBox="0 0 16 16"><path d="M2 3h12v2H2zm0 4h12v2H2zm0 4h8v2H2z" /></symbol>
     </svg>
   );
-}
-
-type BandProps = {
-  years: Year[];
-  /** Each year's address. */
-  href: (year: Year) => string;
-  /** The id of the year being read, marked as the current page. */
-  current?: string;
-  /** What follows the last year, such as the link back to all years. */
-  last?: ReactNode;
-};
-
-/** The row of year pills, with a decade marker where the decade turns. */
-export function YearBand({ years, href, current, last }: BandProps) {
-  const items: ReactNode[] = [];
-  let decade: string | undefined;
-  years.forEach((y, i) => {
-    const d = /^[0-9]+$/.test(y.id) ? y.id.slice(0, 3) : undefined;
-    if (d && ((decade !== undefined && d !== decade) || (decade === undefined && i > 0))) {
-      items.push(<span key={`d-${d}`} className="decade" aria-hidden="true">{`${d[2]}0s`}</span>);
-    }
-    decade = d ?? decade;
-    items.push(
-      <a key={y.id} href={href(y)} aria-label={y.label} aria-current={y.id === current ? "page" : undefined}>{y.nav}</a>,
-    );
-  });
-  return <nav className="years" aria-label="Years">{items}{last}</nav>;
 }
 
 export type Step = { href: string; label: string; detail: string };

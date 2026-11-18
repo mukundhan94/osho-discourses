@@ -5,6 +5,7 @@
 //
 // From the repo root, `make shots` does both: reference from _site/, compare with web/dist/.
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { quiet, started } from "./helpers.ts";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -54,6 +55,10 @@ const STEADY = `
 
 async function settle(page: Page, url: string) {
   await page.goto(url, { waitUntil: "load" });
+  // The year band, the search and the tour start a moment after the page loads. Astro
+  // marks each with an `ssr` attribute until it has started; the Python build has none.
+  await page.waitForFunction(() => !document.querySelector("astro-island[ssr]"));
+  await started(page);
   await page.addStyleTag({ content: STEADY });
   await page.evaluate(async () => {
     document.querySelectorAll(".year").forEach((y) => y.classList.add("arrived"));
@@ -70,9 +75,26 @@ async function settle(page: Page, url: string) {
     const band = here?.parentElement;
     if (here && band) band.scrollLeft = here.offsetLeft - (band.clientWidth - here.offsetWidth) / 2;
   });
+  // On the home page, read down to the first year and come back before any picture.
+  // Chrome draws the year band's text one pixel higher or lower on a phone depending on
+  // when a script first read the band's scroll position, which differs between the two
+  // builds and from run to run. The layout is the same either way, and once the page has
+  // been scrolled both builds draw it the same.
+  if (await page.locator('.years a[href^="#y-"]').count()) {
+    await page.evaluate(() => document.querySelector(".year")!.scrollIntoView({ behavior: "instant" }));
+    await quiet(page);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await quiet(page);
+  }
 }
 
 async function same(target: Page | Locator, name: string, fullPage = false, soft = false) {
+  // Bring the part into view first and let the page react to the scroll, so the picture
+  // never catches the year band between two states.
+  if (!fullPage) {
+    await (target as Locator).scrollIntoViewIfNeeded();
+    await quiet((target as Locator).page());
+  }
   const picture = fullPage ? await (target as Page).screenshot({ fullPage: true }) : await target.screenshot();
   // threshold 0: a pixel counts as different if its colour differs at all.
   (soft ? expect.soft : expect)(picture).toMatchSnapshot(`${name}.png`, { maxDiffPixels: MAX_DIFF_PIXELS, threshold: 0 });

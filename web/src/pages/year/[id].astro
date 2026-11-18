@@ -1,10 +1,13 @@
 ---
 // One year on its own address: the same section the home page shows, with its own head.
-import { YearPage } from "../../components/YearPage.tsx";
+import { Footer, Pager, Sprite } from "../../components/Chrome.tsx";
+import { YearBand } from "../../components/islands/YearBand.tsx";
+import { YearSection } from "../../components/YearSection.tsx";
 import type { Year } from "../../data/index.ts";
 import Page from "../../layouts/Page.astro";
 import { getBuild } from "../../lib/build.ts";
-import { clip, ldText, SITE, yearTitle, yearUrl } from "../../lib/site.ts";
+import { outlineFor } from "../../lib/maps.ts";
+import { clip, ldText, SITE, SITE_NAME, yearTitle, yearUrl } from "../../lib/site.ts";
 
 export function getStaticPaths() {
   return getBuild().site.years.map((year) => ({ params: { id: year.id } }));
@@ -12,6 +15,8 @@ export function getStaticPaths() {
 
 const { site, outlines, seriesUrls } = getBuild();
 const year = site.years.find((y) => y.id === Astro.params.id) as Year;
+const rows = site.rowsByYear.get(year.id)!;
+const at = site.years.indexOf(year);
 const url = SITE + yearUrl(year);
 const title = yearTitle(year);
 const description = clip(year.lede);
@@ -27,7 +32,22 @@ const ld = ldText({
   isPartOf: { "@id": `${SITE}#website` },
   ...(parts.length ? { hasPart: parts } : {}),
 });
+const need = outlineFor(rows, site.places);
+const step = (y: Year | undefined) => y && { href: "/" + yearUrl(y), label: y.label, detail: y.heading };
 ---
-<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]} script="band">
-<YearPage site={site} year={year} outlines={outlines} seriesUrls={seriesUrls} />
+<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]}>
+<Sprite outlines={outlines} need={need ? [need] : []} />
+<a class="skip" href="#main">Skip to the year</a>
+<header class="mast sub">
+  <h1><a href="/">{SITE_NAME}</a><br><span>{year.label}</span></h1>
+  <div class="intro-side">
+  <p>Part of a chronology of every discourse listed on the Sannyas Wiki. <a href={`/#y-${year.id}`}>See it among all {site.years.length} years</a>.</p>
+  </div>
+</header>
+<YearBand client:load current={year.id} items={site.years.map((y) => ({ id: y.id, href: "/" + yearUrl(y), label: y.label, nav: y.nav }))} last={{ href: "/", label: "All years" }} />
+<main id="main" class="solo">
+<YearSection year={year} rows={rows} places={site.places} root="/" arrived media={site.media} links={site.links} seriesUrls={seriesUrls} />
+<Pager label="Earlier and later years" earlier={step(site.years[at - 1])} later={step(site.years[at + 1])} words={["Earlier", "Later"]} />
+</main>
+<Footer />
 </Page>

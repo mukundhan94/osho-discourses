@@ -1,5 +1,6 @@
 import type { Link, Media } from "../data/index.ts";
-import { mediaFor, norm } from "../data/index.ts";
+import { mediaFor } from "../data/match.ts";
+import { norm } from "../data/norm.ts";
 import { quotePlus } from "../lib/format.ts";
 
 const ICON = { listen: "listen", watch: "watch", read: "list" } as const;

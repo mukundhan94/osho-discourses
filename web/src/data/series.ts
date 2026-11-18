@@ -1,32 +1,14 @@
-// Which series a row belongs to, and the list of series pages. Ports of media_for(),
-// row_ids(), collect_series() and the reading half of load_slugs() in scripts/build.py.
+// The list of series pages. Ports of collect_series() and the reading half of
+// load_slugs() in scripts/build.py.
 import fs from "node:fs";
 import path from "node:path";
 import { readTable, records } from "./csv.ts";
 import { compare, DataError, repr, strip } from "./errors.ts";
 import type { Kind, Media, Row, Year } from "./load.ts";
+import { mediaFor, rowIds } from "./match.ts";
 import { norm } from "./norm.ts";
 
-/** The media.csv line a title matches: the longest key the title equals or starts with, word for word. */
-export function mediaFor(title: string, media: Map<string, Media>): Media | undefined {
-  const key = norm(title);
-  let hit: string | undefined;
-  for (const k of media.keys()) {
-    if ((key === k || key.startsWith(k + " ")) && (hit === undefined || k.length > hit.length)) hit = k;
-  }
-  return hit === undefined ? undefined : media.get(hit);
-}
-
-/** The id each row carries on the page, in row order. Rows that share a sort key get an x added. */
-export function rowIds(rows: Row[]): string[] {
-  const seen = new Set<string>();
-  return rows.map((r) => {
-    let rid = "r-" + r.sort.toLowerCase().replace(/[^0-9a-z]+/g, "-");
-    while (seen.has(rid)) rid += "x";
-    seen.add(rid);
-    return rid;
-  });
-}
+export { mediaFor, rowIds } from "./match.ts";
 
 export type Entry = { year: Year; row: Row; rid: string };
 
