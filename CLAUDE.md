@@ -14,13 +14,16 @@ This is a non-commercial reference library: it collects what was spoken, when an
 | `make media` | Regenerate `data/media.csv` (slow: it fetches about 900 pages) |
 | `make slugs` | Give new series an address in `data/slugs.csv` |
 | `make bodycheck BASELINE=<file>` | Build, then compare the home page `<body>` with a saved copy of `index.html` |
+| `make web` | Type-check and build the new (Astro) site into `web/dist/` |
 | `make parity` | Compare `_site/` with `web/dist/`: pages, head tags, links, labels and text |
 | `make shots` | Photograph `_site/`, then compare `web/dist/` with the pictures (Playwright) |
 | `make clean` | Remove `_site/` |
 
 The site build is Python 3 standard library only. Do not add dependencies to it.
 
-`web/` holds the move of the build to React (Astro) and its Node tooling, managed with npm. Nothing in `web/` is deployed yet. Today it holds only the screenshot check.
+`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: it has no pages so far, only the Astro setup and the screenshot check. `make build` and `scripts/build.py` remain the site until the switch.
+
+Node is pinned to 24 in `.nvmrc`; run `nvm use` before any `npm` or `make web`, `make shots` command. Packages in `web/package.json` are pinned to exact versions. `npm --prefix web run check` type-checks without building.
 
 The site build has no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
 
@@ -48,7 +51,7 @@ Things that span several functions:
 
 ## Publishing
 
-Vercel builds and deploys every push to `main` (`vercel.json`). The GitHub workflow only checks that the build passes. So a merge to `main` is a deploy.
+Vercel builds and deploys every push to `main` (`vercel.json`), from the Python build only. The GitHub workflow only checks that both builds pass: job `build` for Python, job `web` for Astro. So a merge to `main` is a deploy.
 
 `.claude/settings.json` allows the build and check commands without a prompt, and asks before any `vercel` or `npx vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts the preview with `make serve`.
 
