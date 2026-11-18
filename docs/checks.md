@@ -37,7 +37,7 @@ Two options narrow or tighten it, for use while pages are being ported:
 - `--pages 'year/*'` compares only the pages whose path matches. It may be given more than once. `robots.txt` and `sitemap.xml` are then left out.
 - `--strict` also compares the markup: the same elements in the same order, with the same attributes and text, after collapsing whitespace. It covers what the other checks do not, such as the coordinates in a map. A comment that splits a run of text counts as a difference, because the browser stops kerning across it.
 
-CI runs `python3 scripts/parity_check.py --strict --pages 'index.html' --pages 'year/*' --pages 'series/*'` on every pull request.
+CI runs `python3 scripts/parity_check.py --strict` on every pull request, over the whole site.
 
 It does not check behaviour. Whether the search, the reading tour and the year band still work is checked when those parts are ported.
 
@@ -52,7 +52,7 @@ It does not check behaviour. Whether the search, the reading tour and the year b
 
 No pixel may differ. Fifteen runs of the Python build against itself differed by zero pixels (2026-11-17).
 
-Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by `make web`. Every page is ported, so `make shots` runs whole. `make parity` still reports `robots.txt` and `sitemap.xml`, which the new build does not write yet; `--pages` leaves them out.
+Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by `make web`. Every page is ported, so both commands run whole.
 
 Before the first `make shots`, run `npm --prefix web install` and `npx --prefix web playwright install chromium` once. To compare a folder other than `web/dist/`, run `python3 scripts/parity_check.py OLD NEW`, or set `PARITY_DIR` for `npm --prefix web run shots:compare`.
 
@@ -63,7 +63,11 @@ Runs while both builds exist. `web/src/data/` loads `data/` for the new build, a
 - on the real data, both load the same values: every year, row, town list, row id, matched series, and every series with its name, kind, years and address;
 - on each broken copy of the data in `web/tests/fixtures/data-cases.json`, both stop with the same message.
 
-The Python side is `scripts/data_dump.py`. The broken copies cover the faults below that come from the data files. The page checks (titles, links, the shared picture, structured data) move over with the pages.
+The Python side is `scripts/data_dump.py`. The broken copies cover the faults below that come from the data files.
+
+The same command tests the checks `make web` runs on the finished site (`web/src/lib/checks.ts`): unique titles, descriptions and canonical addresses, links that lead to a file, and the shared picture. Each is run beside `build.py`'s own check on the same broken folder or picture, and must stop with the same message.
+
+`make web` is stricter than `make build` in two places, where `build.py` stops on a Python traceback instead of a message: a year with no `heading` or `lede`, and a `talks`, `video` or `minutes` value in `data/media.csv` that is not a whole number.
 
 ## `make build`
 
