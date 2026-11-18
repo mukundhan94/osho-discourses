@@ -103,7 +103,17 @@ export function loadRows(root: string, yearId: string, places: Places): Row[] {
 export function loadMedia(root: string): Map<string, Media> {
   const file = path.join(root, "data", "media.csv");
   if (!fs.existsSync(file)) return new Map();
-  return new Map(records(readTable(file)).map((r) => [r["key"]!, r]));
+  const rows = records(readTable(file));
+  // The pages do sums with these three. build.py stops on a traceback where it meets a
+  // bad one; this stops sooner, on any line, and says which.
+  rows.forEach((r, i) => {
+    for (const column of ["talks", "video", "minutes"]) {
+      if (!/^[0-9]*$/.test(r[column] ?? "")) {
+        throw new DataError(`media.csv:${i + 2}: ${column} must be a whole number or empty, not ${repr(r[column]!)}`);
+      }
+    }
+  });
+  return new Map(rows.map((r) => [r["key"]!, r]));
 }
 
 /** Hand-added links from data/links.csv, grouped by normalised series title, in file order. */
@@ -133,7 +143,10 @@ export function loadYears(root: string): Year[] {
   const raw = JSON.parse(fs.readFileSync(path.join(root, "data", "years.json"), "utf8")) as Partial<Year>[];
   return raw.map((y) => {
     const id = y.id as string;
-    // heading and lede are required; build.py has no check for them and neither does this.
+    // Every year section prints both. build.py stops on a traceback without them.
+    for (const field of ["heading", "lede"] as const) {
+      if (typeof y[field] !== "string" || !y[field]) throw new DataError(`years.json: ${id}: ${field} is required`);
+    }
     return { ...y, id, label: y.label ?? id, numeral: y.numeral ?? id, nav: y.nav ?? id.slice(-2), source: y.source ?? `${WIKI}_${id}` } as Year;
   });
 }

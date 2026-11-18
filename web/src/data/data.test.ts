@@ -105,6 +105,18 @@ cases.broken.forEach((c, i) => {
   });
 });
 
+// Faults build.py has no message for: it stops on a Python traceback, or only when a
+// page happens to use the value. The TypeScript loader names them.
+test("stops on a year with no heading", () => {
+  const root = copyWith([{ file: "years.json", find: '"heading": "The first camp at Ranakpur",', replace: "" }], 200);
+  assert.equal(typescript(root).fault, "years.json: 1964: heading is required");
+});
+
+test("stops on a media.csv count that is not a whole number", () => {
+  const root = copyWith([{ file: "media.csv", find: ",29,1,0,,", replace: ",29,1.5,0,," }], 201);
+  assert.equal(typescript(root).fault, "media.csv:3: video must be a whole number or empty, not '1.5'");
+});
+
 test("the CSV reader treats quotes as Python's csv module does", () => {
   assert.deepStrictEqual(parseCsv('a,"b,c","d ""e"""\n'), [["a", "b,c", 'd "e"']]);
   assert.deepStrictEqual(parseCsv('x,5" tall,\n\n,\n'), [["x", '5" tall', ""], ["", ""]]);
