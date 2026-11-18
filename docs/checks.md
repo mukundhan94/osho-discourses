@@ -45,6 +45,8 @@ It does not check behaviour. Whether the search, the reading tour and the year b
 
 No pixel may differ. Fifteen runs of the Python build against itself differed by zero pixels (2026-11-17).
 
+Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by `make web`. Until pages are ported, `web/dist/` holds no pages, so `make parity` reports every page as missing.
+
 Before the first `make shots`, run `npm --prefix web install` and `npx --prefix web playwright install chromium` once. To compare a folder other than `web/dist/`, run `python3 scripts/parity_check.py OLD NEW`, or set `PARITY_DIR` for `npm --prefix web run shots:compare`.
 
 ## `make build`
