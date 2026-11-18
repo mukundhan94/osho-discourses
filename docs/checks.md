@@ -49,6 +49,15 @@ Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by 
 
 Before the first `make shots`, run `npm --prefix web install` and `npx --prefix web playwright install chromium` once. To compare a folder other than `web/dist/`, run `python3 scripts/parity_check.py OLD NEW`, or set `PARITY_DIR` for `npm --prefix web run shots:compare`.
 
+## `npm --prefix web test`
+
+Runs while both builds exist. `web/src/data/` loads `data/` for the new build, and must agree with `scripts/build.py`:
+
+- on the real data, both load the same values: every year, row, town list, row id, matched series, and every series with its name, kind, years and address;
+- on each broken copy of the data in `web/tests/fixtures/data-cases.json`, both stop with the same message.
+
+The Python side is `scripts/data_dump.py`. The broken copies cover the faults below that come from the data files. The page checks (titles, links, the shared picture, structured data) move over with the pages.
+
 ## `make build`
 
 `make build` fails on any of these:

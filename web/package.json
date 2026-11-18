@@ -8,6 +8,7 @@
   "scripts": {
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "test": "node --test \"src/**/*.test.ts\"",
     "shots:reference": "playwright test --update-snapshots",
     "shots:compare": "playwright test"
   },
