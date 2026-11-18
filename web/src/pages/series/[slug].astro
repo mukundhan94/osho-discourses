@@ -35,6 +35,6 @@ const ld = ldText({
   ...(x.media["wiki_url"] ? { sameAs: x.media["wiki_url"] } : {}),
 });
 ---
-<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]}>
+<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]} script="band">
 <SeriesPage site={site} series={x} outlines={outlines} />
 </Page>

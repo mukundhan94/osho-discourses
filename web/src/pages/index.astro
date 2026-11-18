@@ -1,0 +1,21 @@
+---
+// The home page: every year on one page, under the masthead and the reading tour.
+import { HomePage } from "../components/HomePage.tsx";
+import Page from "../layouts/Page.astro";
+import { getBuild } from "../lib/build.ts";
+import { homeLd, ldText, SITE, SITE_NAME, siteSpan } from "../lib/site.ts";
+
+const { site, outlines, seriesUrls } = getBuild();
+const span = siteSpan(site.years);
+---
+<Page
+  title={`${SITE_NAME}, ${span}`}
+  description={`A chronology of Osho's discourses from ${span}: series, dates, places and talk counts, compiled from the Sannyas Wiki year timelines.`}
+  ogDescription="Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks."
+  canonical={SITE}
+  ld={ldText(homeLd(site.years))}
+  root=""
+  script="home"
+>
+<HomePage site={site} outlines={outlines} seriesUrls={seriesUrls} />
+</Page>

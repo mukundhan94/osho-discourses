@@ -37,7 +37,7 @@ Two options narrow or tighten it, for use while pages are being ported:
 - `--pages 'year/*'` compares only the pages whose path matches. It may be given more than once. `robots.txt` and `sitemap.xml` are then left out.
 - `--strict` also compares the markup: the same elements in the same order, with the same attributes and text, after collapsing whitespace. It covers what the other checks do not, such as the coordinates in a map. A comment that splits a run of text counts as a difference, because the browser stops kerning across it.
 
-CI runs `python3 scripts/parity_check.py --strict --pages 'year/*' --pages 'series/*'` on every pull request.
+CI runs `python3 scripts/parity_check.py --strict --pages 'index.html' --pages 'year/*' --pages 'series/*'` on every pull request.
 
 It does not check behaviour. Whether the search, the reading tour and the year band still work is checked when those parts are ported.
 
@@ -52,7 +52,7 @@ It does not check behaviour. Whether the search, the reading tour and the year b
 
 No pixel may differ. Fifteen runs of the Python build against itself differed by zero pixels (2026-11-17).
 
-Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by `make web`. Until every page is ported, `make parity` and `make shots` report the missing ones. To photograph only the ported pages, run the two halves by hand in `web/`: `PARITY_DIR=../_site npx playwright test -g 'year-|series-' --update-snapshots`, then `PARITY_DIR=dist npx playwright test -g 'year-|series-'`.
+Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by `make web`. Every page is ported, so `make shots` runs whole. `make parity` still reports `robots.txt` and `sitemap.xml`, which the new build does not write yet; `--pages` leaves them out.
 
 Before the first `make shots`, run `npm --prefix web install` and `npx --prefix web playwright install chromium` once. To compare a folder other than `web/dist/`, run `python3 scripts/parity_check.py OLD NEW`, or set `PARITY_DIR` for `npm --prefix web run shots:compare`.
 

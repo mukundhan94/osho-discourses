@@ -28,6 +28,6 @@ const ld = ldText({
   ...(parts.length ? { hasPart: parts } : {}),
 });
 ---
-<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]}>
+<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]} script="band">
 <YearPage site={site} year={year} outlines={outlines} seriesUrls={seriesUrls} />
 </Page>
