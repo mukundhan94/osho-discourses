@@ -1,19 +1,17 @@
 ---
 // One year on its own address: the same section the home page shows, with its own head.
 import { YearPage } from "../../components/YearPage.tsx";
-import { loadSite, REPO_ROOT } from "../../data/index.ts";
 import type { Year } from "../../data/index.ts";
 import Page from "../../layouts/Page.astro";
-import { loadOutlines } from "../../lib/maps.ts";
+import { getBuild } from "../../lib/build.ts";
 import { clip, ldText, SITE, yearTitle, yearUrl } from "../../lib/site.ts";
 
 export function getStaticPaths() {
-  return loadSite().years.map((year) => ({ params: { id: year.id } }));
+  return getBuild().site.years.map((year) => ({ params: { id: year.id } }));
 }
 
-const site = loadSite();
+const { site, outlines, seriesUrls } = getBuild();
 const year = site.years.find((y) => y.id === Astro.params.id) as Year;
-const seriesUrls = new Map(site.series.map((x) => [x.key, `/series/${x.slug}/`]));
 const url = SITE + yearUrl(year);
 const title = yearTitle(year);
 const description = clip(year.lede);
@@ -31,5 +29,5 @@ const ld = ldText({
 });
 ---
 <Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]}>
-<YearPage site={site} year={year} outlines={loadOutlines(REPO_ROOT)} seriesUrls={seriesUrls} />
+<YearPage site={site} year={year} outlines={outlines} seriesUrls={seriesUrls} />
 </Page>
