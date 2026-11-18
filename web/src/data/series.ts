@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readTable, records } from "./csv.ts";
-import { compare, DataError, repr } from "./errors.ts";
+import { compare, DataError, repr, strip } from "./errors.ts";
 import type { Kind, Media, Row, Year } from "./load.ts";
 import { norm } from "./norm.ts";
 
@@ -69,11 +69,10 @@ export function collectSeries(years: Year[], rowsByYear: Map<string, Row[]>, med
   return out.map((x) => {
     const first = x.entries[0]!.row.title;
     // Prefer the wiki's spelling without its script gloss or part number; fall back to the row's title.
-    const wiki = x.media["wiki_title"]!
-      .replace(/\s*\([^)]*[^\x00-\x7f][^)]*\)/g, "")
-      .replace(/\s*~\s*\p{Nd}+\s*$/u, "")
-      .trim();
-    const row = first.replace(/,\s*\p{Nd}[\p{Nd} ,toand]*$/u, "").trim();
+    const wiki = strip(
+      x.media["wiki_title"]!.replace(/\s*\([^)]*[^\x00-\x7f][^)]*\)/g, "").replace(/\s*~\s*\p{Nd}+\s*$/u, ""),
+    );
+    const row = strip(first.replace(/,\s*\p{Nd}[\p{Nd} ,toand]*$/u, ""));
     const name = norm(wiki) === x.key ? wiki : row;
     if (norm(name) !== x.key) {
       throw new DataError(`series ${repr(x.key)}: cannot work out a display name from ${repr(first)}`);

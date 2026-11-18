@@ -262,6 +262,28 @@
         }
       ],
       "expect": "links.csv: no series is titled 'No Such Series'"
+    },
+    {
+      "name": "an unknown town with a no-break space in it",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Kshan,Bombay,Bombay,2",
+          "replace": "Kshan,Bombay,New Delhi,2"
+        }
+      ],
+      "expect": "town 'New\\xa0Delhi' is not in places.csv"
+    },
+    {
+      "name": "an unknown town with a zero-width space in it",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Kshan,Bombay,Bombay,2",
+          "replace": "Kshan,Bombay,Bom​bay,2"
+        }
+      ],
+      "expect": "town 'Bom\\u200bbay' is not in places.csv"
     }
   ],
   "valid": [
@@ -318,6 +340,26 @@
         {
           "file": "talks/1964.csv",
           "append": "1964-12-31z,31 Dec,Sadhana Pathway,Bombay,Bombay,1,untitled,,,hi"
+        }
+      ]
+    },
+    {
+      "name": "a town followed by a control character that Python strips",
+      "edits": [
+        {
+          "file": "talks/1964.csv",
+          "find": "Kshan,Bombay,Bombay,2",
+          "replace": "Kshan,Bombay,Bombay\u001f,2"
+        }
+      ]
+    },
+    {
+      "name": "a photograph given as an empty object",
+      "edits": [
+        {
+          "file": "years.json",
+          "find": "File:Jain_Temple_Ranakpur.jpg\"\n    }",
+          "replace": "File:Jain_Temple_Ranakpur.jpg\"\n    },\n    \"photo\": {}"
         }
       ]
     }

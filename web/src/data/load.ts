@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readTable, records } from "./csv.ts";
-import { compare, DataError, repr, reprList } from "./errors.ts";
+import { compare, DataError, repr, reprList, strip } from "./errors.ts";
 import { norm } from "./norm.ts";
 
 export const KINDS = ["camp", "darshan", "interview", "series", "untitled"] as const;
@@ -72,7 +72,7 @@ export function loadRows(root: string, yearId: string, places: Places): Row[] {
     if (r.unsure !== "" && r.unsure !== "y") throw new DataError(`${at}: unsure must be empty or y`);
     if (!(LANGS as readonly string[]).includes(r.lang)) throw new DataError(`${at}: lang must be hi, en or empty`);
     if (fields.join("").includes("—")) throw new DataError(`${at}: em-dash found`);
-    const townList = r.towns.split(";").map((t) => t.trim()).filter(Boolean);
+    const townList = r.towns.split(";").map(strip).filter(Boolean);
     for (const t of townList) {
       if (!places.has(t)) throw new DataError(`${at}: town ${repr(t)} is not in places.csv`);
     }
@@ -100,7 +100,7 @@ export function loadLinks(root: string): Map<string, Link[]> {
   }
   records(table).forEach((r, i) => {
     const at = `links.csv:${i + 2}`;
-    if (!r["title"]!.trim() || !r["label"]!.trim()) throw new DataError(`${at}: title and label are required`);
+    if (!strip(r["title"]!) || !strip(r["label"]!)) throw new DataError(`${at}: title and label are required`);
     if (!(LINK_KINDS as readonly string[]).includes(r["kind"]!)) {
       throw new DataError(`${at}: kind must be one of ${reprList([...LINK_KINDS])}`);
     }
@@ -123,7 +123,8 @@ export function loadYears(root: string): Year[] {
 /** A year's photograph must be in assets/img/ and credited in assets/img/CREDITS.md. */
 export function checkPhoto(root: string, year: Year): void {
   const photo = year.photo;
-  if (!photo) return;
+  // An empty object counts as no photograph, as it does in Python.
+  if (!photo || Object.keys(photo).length === 0) return;
   const img = path.join(root, "assets", "img");
   if (!fs.existsSync(path.join(img, photo.file))) {
     throw new DataError(`${year.id}: photo ${photo.file} is not in assets/img/`);
