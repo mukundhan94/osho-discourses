@@ -14,11 +14,15 @@ This is a non-commercial reference library: it collects what was spoken, when an
 | `make media` | Regenerate `data/media.csv` (slow: it fetches about 900 pages) |
 | `make slugs` | Give new series an address in `data/slugs.csv` |
 | `make bodycheck BASELINE=<file>` | Build, then compare the home page `<body>` with a saved copy of `index.html` |
+| `make parity` | Compare `_site/` with `web/dist/`: pages, head tags, links, labels and text |
+| `make shots` | Photograph `_site/`, then compare `web/dist/` with the pictures (Playwright) |
 | `make clean` | Remove `_site/` |
 
-Python 3 standard library only. Do not add dependencies or a build step.
+The site build is Python 3 standard library only. Do not add dependencies to it.
 
-There is no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
+`web/` holds the move of the build to React (Astro) and its Node tooling, managed with npm. Nothing in `web/` is deployed yet. Today it holds only the screenshot check.
+
+The site build has no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
 
 ## How the build works
 

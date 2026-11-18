@@ -1,0 +1,12 @@
+{
+  "name": "osho-discourses",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "shots:reference": "playwright test --update-snapshots",
+    "shots:compare": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
+  }
+}
