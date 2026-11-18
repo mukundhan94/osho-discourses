@@ -22,7 +22,7 @@ The site build is Python 3 standard library only. Do not add dependencies to it.
 
 `web/` holds the move of the build to React (Astro) and its Node tooling, managed with npm. Nothing in `web/` is deployed yet. Today it holds only the screenshot check.
 
-There is no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
+The site build has no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
 
 ## How the build works
 

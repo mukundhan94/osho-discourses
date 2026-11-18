@@ -28,9 +28,11 @@ These two exist while the build moves from Python to React. They compare the Pyt
 `make parity` runs `scripts/parity_check.py` (Python, no dependencies). It compares:
 
 - the set of pages, `robots.txt`, and the addresses in `sitemap.xml`;
-- on every page: the title, description, canonical, social tags, JSON-LD, ids, links, visible text, and the attributes that carry words or meaning (labels, alt text, roles).
+- on every page: the title, every named meta tag (description, robots, social tags and the rest), canonical, JSON-LD, ids, links in page order, visible text, and the attributes that carry words or meaning (every `aria-` attribute, alt text, roles, a label's `for`, a link's `rel` and `target`).
 
-It ignores what a reader cannot perceive: markup structure, class names, whitespace and cache markers.
+It ignores what a reader cannot perceive: markup structure, class names, runs of whitespace, and the cache marker on stylesheet and script links.
+
+It does not check behaviour. Whether the search, the reading tour and the year band still work is checked when those parts are ported.
 
 `make shots` runs a Playwright test in `web/`. It photographs the Python build, then photographs the new build and compares each picture pixel by pixel, at 1440px and 390px wide:
 

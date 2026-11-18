@@ -6,14 +6,14 @@
 // From the repo root, `make shots` does both: reference from _site/, compare with web/dist/.
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import fs from "node:fs";
-import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 // How many pixels may differ in one picture. Set after measuring the noise between two
 // runs of the same build; see docs/checks.md. Measured at 0 on 2026-11-17.
 const MAX_DIFF_PIXELS = Number(process.env.PARITY_MAX_DIFF_PIXELS ?? 0);
 
 const years: { id: string }[] = JSON.parse(
-  fs.readFileSync(path.resolve(import.meta.dirname, "../../data/years.json"), "utf8"),
+  fs.readFileSync(fileURLToPath(new URL("../../data/years.json", import.meta.url)), "utf8"),
 );
 
 // Twenty series, chosen to cover each kind of series page: series, camp, darshan diary,

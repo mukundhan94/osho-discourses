@@ -29,7 +29,7 @@ parity: build ## Compare _site/ with web/dist/: pages, head tags, links, labels 
 	python3 scripts/parity_check.py
 
 shots: build ## Photograph _site/, then compare web/dist/ with the pictures
-	npm --prefix web run shots:reference
+	PARITY_DIR=../_site npm --prefix web run shots:reference
 	PARITY_DIR=dist npm --prefix web run shots:compare
 
 clean: ## Remove the built site

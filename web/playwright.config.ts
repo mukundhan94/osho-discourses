@@ -21,7 +21,9 @@ export default defineConfig({
     reducedMotion: "reduce",
   },
   webServer: {
-    command: `python3 -m http.server ${port} --bind 127.0.0.1 --directory "${dir}"`,
+    // The folder is the server's working directory, so its path never passes through a shell.
+    command: `python3 -m http.server ${port} --bind 127.0.0.1`,
+    cwd: dir,
     url: `http://127.0.0.1:${port}/robots.txt`,
     reuseExistingServer: false,
   },
