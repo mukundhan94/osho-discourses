@@ -1,0 +1,35 @@
+---
+// One year on its own address: the same section the home page shows, with its own head.
+import { YearPage } from "../../components/YearPage.tsx";
+import { loadSite, REPO_ROOT } from "../../data/index.ts";
+import type { Year } from "../../data/index.ts";
+import Page from "../../layouts/Page.astro";
+import { loadOutlines } from "../../lib/maps.ts";
+import { clip, ldText, SITE, yearTitle, yearUrl } from "../../lib/site.ts";
+
+export function getStaticPaths() {
+  return loadSite().years.map((year) => ({ params: { id: year.id } }));
+}
+
+const site = loadSite();
+const year = site.years.find((y) => y.id === Astro.params.id) as Year;
+const seriesUrls = new Map(site.series.map((x) => [x.key, `/series/${x.slug}/`]));
+const url = SITE + yearUrl(year);
+const title = yearTitle(year);
+const description = clip(year.lede);
+const parts = site.series.filter((x) => x.years.includes(year)).map((x) => ({ "@id": `${SITE}series/${x.slug}/` }));
+const ld = ldText({
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": url,
+  url,
+  name: title,
+  description,
+  inLanguage: "en",
+  isPartOf: { "@id": `${SITE}#website` },
+  ...(parts.length ? { hasPart: parts } : {}),
+});
+---
+<Page title={title} description={description} canonical={url} ld={ld} root="/" extraCss={["pages.css"]}>
+<YearPage site={site} year={year} outlines={loadOutlines(REPO_ROOT)} seriesUrls={seriesUrls} />
+</Page>

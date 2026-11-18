@@ -31,17 +31,34 @@ export type Row = {
   townList: string[];
 };
 
-export type Photo = { file: string; [key: string]: unknown };
+export type Photo = {
+  file: string;
+  alt: string;
+  caption: string;
+  author: string;
+  licence: string;
+  licence_url: string;
+  source_url: string;
+  /** The words before the author's name. Left out, it reads "Recent photograph by". */
+  credit?: string;
+};
 
 /** One entry of data/years.json, with the defaults build.py fills in. */
 export type Year = {
   id: string;
   label: string;
   numeral: string;
+  /** A second line under the numeral, such as "to 1963". */
+  numeral_sub?: string;
   nav: string;
   source: string;
+  heading: string;
+  lede: string;
   photo?: Photo;
-  [key: string]: unknown;
+  /** Join the map's places with a dashed line, in the order of the rows. */
+  route?: boolean;
+  /** Lines of [date, text] shown in place of the table. */
+  closing?: [string, string][];
 };
 
 /** One line of data/media.csv: every column is kept as text. */
@@ -116,7 +133,8 @@ export function loadYears(root: string): Year[] {
   const raw = JSON.parse(fs.readFileSync(path.join(root, "data", "years.json"), "utf8")) as Partial<Year>[];
   return raw.map((y) => {
     const id = y.id as string;
-    return { ...y, id, label: y.label ?? id, numeral: y.numeral ?? id, nav: y.nav ?? id.slice(-2), source: y.source ?? `${WIKI}_${id}` };
+    // heading and lede are required; build.py has no check for them and neither does this.
+    return { ...y, id, label: y.label ?? id, numeral: y.numeral ?? id, nav: y.nav ?? id.slice(-2), source: y.source ?? `${WIKI}_${id}` } as Year;
   });
 }
 
