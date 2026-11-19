@@ -16,23 +16,25 @@ This is a non-commercial reference library: it collects what was spoken, when an
 | `make bodycheck BASELINE=<file>` | Build, then compare the home page `<body>` with a saved copy of `index.html` |
 | `make web` | Type-check and build the new (Astro) site into `web/dist/` |
 | `make parity` | Compare `_site/` with `web/dist/`: pages, head tags, links, labels and text |
-| `make shots` | Photograph `_site/`, then compare `web/dist/` with the pictures (Playwright) |
+| `make shots` | Photograph and drive `_site/`, then compare `web/dist/` with the pictures and the behaviour record (Playwright) |
 | `make clean` | Remove `_site/` |
 
 The site build is Python 3 standard library only. Do not add dependencies to it.
 
-`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: it builds the whole site: all 575 pages, `robots.txt`, `sitemap.xml` and a copy of `assets/`, the same set of files as `_site/`. After writing them it runs the page checks and the share image check that `make build` runs, and stops on a fault. The home page still loads `assets/site.js`, unchanged. `make build` and `scripts/build.py` remain the site until the switch.
+`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: it builds the whole site: all 575 pages, `robots.txt`, `sitemap.xml` and a copy of `assets/`, the same set of files as `_site/`. After writing them it runs the page checks and the share image check that `make build` runs, and stops on a fault. `make build` and `scripts/build.py` remain the site until the switch.
 
 Node is pinned to 24 in `.nvmrc`; run `nvm use` before any `npm` or `make web`, `make shots` command. Packages in `web/package.json` are pinned to exact versions. `npm --prefix web run check` type-checks without building.
 
 `web/src/data/` is the TypeScript port of how `build.py` loads and checks `data/`: `loadSite()` in `index.ts` returns the years, rows, places, media, links and series. It must load the same values as `build.py` and stop on the same faults with the same message. `npm --prefix web test` proves that against `scripts/data_dump.py`, on the real data and on the broken copies listed in `web/tests/fixtures/data-cases.json`. A change to a loading rule or a check in `build.py` needs the same change there, and a case in that file.
 
-Pages in `web/` are ported, not redesigned: same elements, same class names, same text, so `assets/site.css` applies unchanged. `web/src/pages/` and `web/src/layouts/` are Astro (the document, the head, the inline scripts); everything inside `<body>` is React in `web/src/components/`, rendered to HTML at build time and sent with no script; logic with no markup is in `web/src/lib/`. Two rules that are easy to break:
+Pages in `web/` are ported, not redesigned: same elements, same class names, same text, so `assets/site.css` applies unchanged. `web/src/pages/` and `web/src/layouts/` are Astro (the document, the head, the page's outline); the rest is React in `web/src/components/`; logic with no markup is in `web/src/lib/`.
+
+Most components are rendered to HTML at build time and send no script. Three also run in the browser, in `web/src/components/islands/`: `YearBand` on every page, and `Find` (the series search) and `Tour` on the home page. They replace `assets/site.js`, which only `build.py` still loads. A part runs in the browser only where a page file gives it `client:load`, and whatever it is given there is written into the page as data, so give it little. Code those three import must not read files: `data/match.ts`, `data/norm.ts` and `data/errors.ts` are safe, `data/index.ts` is not. Two rules that are easy to break:
 
 - **One string per run of text.** In JSX, write `{`All in ${town}`}`, never `All in {town}`. React puts an empty comment between a value and the text beside it, the browser then shapes the two pieces apart, and the pixels move.
 - **Format numbers with `lib/format.ts`.** Python rounds an exact half to the even digit; `toFixed()` and `Math.round()` do not.
 
-To compare the ported pages with the Python build, run `make build` and `make web`, then `python3 scripts/parity_check.py --strict` (`make parity` is the same without `--strict`). CI does the same. `make shots` compares the pictures.
+To compare the ported pages with the Python build, run `make build` and `make web`, then `python3 scripts/parity_check.py --strict --islands` (`make parity` is the same without `--strict`). CI does the same. `--islands` leaves out how the three browser parts are started, which the two builds do differently. `make shots` compares the pictures and what the tour, the search and the band do when driven. One difference is accepted and named in `web/tests/screenshots.spec.ts`: on the phone-width home page the year band's text is drawn one pixel higher.
 
 The two builds date the sitemap differently. `build.py` uses the last commit touching `data`, `assets` or `scripts/build.py`; the new build uses `data`, `assets` or `web/src`.
 

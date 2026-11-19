@@ -37,7 +37,9 @@ Two options narrow or tighten it, for use while pages are being ported:
 - `--pages 'year/*'` compares only the pages whose path matches. It may be given more than once. `robots.txt` and `sitemap.xml` are then left out.
 - `--strict` also compares the markup: the same elements in the same order, with the same attributes and text, after collapsing whitespace. It covers what the other checks do not, such as the coordinates in a map. A comment that splits a run of text counts as a difference, because the browser stops kerning across it.
 
-CI runs `python3 scripts/parity_check.py --strict` on every pull request, over the whole site.
+- `--islands` leaves out how the year band, the search and the tour are started. `build.py` loads `assets/site.js` and a short inline script; the new build starts three React parts, each inside an `<astro-island>` element with scripts of its own. With this option those wrapper elements, every `<style>` element and every script other than the analytics snippet and the structured data are left out on both sides. What is inside a wrapper is still compared.
+
+CI runs `python3 scripts/parity_check.py --strict --islands` on every pull request, over the whole site. `make parity` passes `--islands` too.
 
 It does not check behaviour. Whether the search, the reading tour and the year band still work is checked when those parts are ported.
 
@@ -50,7 +52,9 @@ It does not check behaviour. Whether the search, the reading tour and the year b
 | Year pages, whole page | 28 |
 | Series pages, whole page (20 chosen to cover every kind) | 20 |
 
-No pixel may differ. Fifteen runs of the Python build against itself differed by zero pixels (2026-11-17).
+No pixel may differ, with one named exception. On the home page at 390px, the year band's text is drawn one pixel higher in the new build: 1,107 pixels in the band's picture, and the 196 pixels of its border in the top row of the picture below. The layout is the same in both builds; the limits are in `web/tests/screenshots.spec.ts`. Fifteen runs of the Python build against itself differed by zero pixels (2026-11-17).
+
+`make shots` also runs `web/tests/behaviour.spec.ts`. It drives the reading tour, the series search and the year band on the home page, and the year band on three year pages and two series pages, and writes down what each did. The record from the new build must equal the record from the Python build.
 
 Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by `make web`. Every page is ported, so both commands run whole.
 

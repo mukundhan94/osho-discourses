@@ -29,9 +29,9 @@ web: ## Type-check and build the new (Astro) site into web/dist/
 	npm --prefix web run build
 
 parity: build ## Compare _site/ with web/dist/: pages, head tags, links, labels and text
-	python3 scripts/parity_check.py
+	python3 scripts/parity_check.py --islands
 
-shots: build ## Photograph _site/, then compare web/dist/ with the pictures
+shots: build ## Photograph and drive _site/, then compare web/dist/ with the record
 	PARITY_DIR=../_site npm --prefix web run shots:reference
 	PARITY_DIR=dist npm --prefix web run shots:compare
 
