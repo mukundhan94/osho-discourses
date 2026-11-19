@@ -1,12 +1,29 @@
 ---
 // The home page: every year on one page, under the masthead and the reading tour.
-import { HomePage } from "../components/HomePage.tsx";
+import { Footer, Sprite } from "../components/Chrome.tsx";
+import { Find } from "../components/islands/Find.tsx";
+import { Tour } from "../components/islands/Tour.tsx";
+import { YearBand } from "../components/islands/YearBand.tsx";
+import { YearSection } from "../components/YearSection.tsx";
+import { mediaFor } from "../data/match.ts";
+import { norm } from "../data/norm.ts";
 import Page from "../layouts/Page.astro";
 import { getBuild } from "../lib/build.ts";
-import { homeLd, ldText, SITE, SITE_NAME, siteSpan } from "../lib/site.ts";
+import { homeLd, ldText, SITE, SITE_NAME, siteSpan, yearUrl } from "../lib/site.ts";
 
 const { site, outlines, seriesUrls } = getBuild();
 const span = siteSpan(site.years);
+
+// The three rows of 1964 the tour uses as its example, and the cards that light each up.
+const TOUR_ROWS: Record<string, string> = {
+  "Mahaveer Ya Mahavinash, 3": "row links",
+  "Sadhana Path": "camp count",
+  "Talks in Nandurbar": "row",
+};
+const sample = site.rowsByYear.get("1964")!.filter((r) => r.title in TOUR_ROWS);
+// The tour runs in the browser, so it is sent only the media and links its three rows use.
+const sampleMedia = new Map(sample.flatMap((r) => { const m = mediaFor(r.title, site.media); return m ? [[m["key"]!, m] as const] : []; }));
+const sampleLinks = new Map([...site.links].filter(([key]) => sample.some((r) => { const k = norm(r.title); return k === key || k.startsWith(key + " "); })));
 ---
 <Page
   title={`${SITE_NAME}, ${span}`}
@@ -15,7 +32,27 @@ const span = siteSpan(site.years);
   canonical={SITE}
   ld={ldText(homeLd(site.years))}
   root=""
-  script="home"
 >
-<HomePage site={site} outlines={outlines} seriesUrls={seriesUrls} />
+<Sprite outlines={outlines} need={["india", "world"]} />
+<a class="skip" href="#main">Skip to the chronology</a>
+<header class="mast">
+  <h1>{SITE_NAME}<br><span>{span}</span></h1>
+  <div class="intro-side">
+  <p>{`Every discourse listed on the Sannyas Wiki, in date order: the series, the place and the number of talks. ${site.grand.rows} entries across ${site.grand.towns} places.`}</p>
+  <Find client:load />
+  </div>
+</header>
+<YearBand client:load track items={site.years.map((y) => ({ id: y.id, href: `#y-${y.id}`, label: y.label, nav: y.nav }))} last={{ href: "#sources", label: "Sources" }} />
+<main id="main">
+<section class="reading" aria-labelledby="h-reading">
+  <h2 id="h-reading" class="vh">How to read this page</h2>
+  <p class="lead">A free, non-commercial library of when and where Osho spoke.
+  <small>Nothing here is for sale. Recordings are linked, never stored here.</small></p>
+  <Tour client:load rows={sample.map((row) => ({ row, lights: TOUR_ROWS[row.title]! }))} media={sampleMedia} links={sampleLinks} />
+</section>
+{site.years.map((year) => (
+  <YearSection year={year} rows={site.rowsByYear.get(year.id)!} places={site.places} root="" yearHref={"/" + yearUrl(year)} media={site.media} links={site.links} seriesUrls={seriesUrls} />
+))}
+</main>
+<Footer />
 </Page>

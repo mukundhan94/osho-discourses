@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Compare two built copies of the site. Standard library only.
 
-Usage: python3 scripts/parity_check.py [--strict] [--pages GLOB]... [OLD] [NEW]
+Usage: python3 scripts/parity_check.py [--strict] [--islands] [--pages GLOB]... [OLD] [NEW]
   OLD            the reference build (default: _site)
   NEW            the build to check (default: web/dist)
   --strict       also require every element, attribute and piece of text to match
+  --islands      leave out how the year band, the search and the tour are started
+                 (see below)
   --pages GLOB   compare only the pages whose path matches, such as 'year/*'.
                  May be given more than once. robots.txt and sitemap.xml are
                  then left out, since they describe the whole site.
@@ -22,6 +24,15 @@ With --strict the markup itself is compared too, after collapsing whitespace:
 the same elements in the same order, with the same attributes and text. That
 holds only while the new build keeps the old one's structure and class names,
 which is how the pages are being ported.
+
+With --islands the two builds may start the year band, the search and the tour
+in different ways. The old build does it with assets/site.js and a short inline
+script; the new one with React parts, each of which Astro wraps in an
+<astro-island> element and starts from scripts of its own. So this option leaves
+out, on both sides: those wrapper elements (what is inside them is still
+compared), every <style> element, and every script other than the analytics
+snippet and the structured data. What those scripts do is checked by the
+behaviour test in web/.
 
 Prints every difference and exits 1 if there is any. How the pages look is
 checked separately, by the screenshot test in web/.
@@ -47,6 +58,9 @@ SPOKEN = ("alt", "title", "placeholder", "role", "scope", "lang", "for", "rel", 
 HASHED = {("link", "href"), ("script", "src")}
 # Elements that never have a closing tag, however they are written.
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+# Set by --islands. The elements Astro wraps around a part that runs in the browser.
+ISLANDS = False
+WRAPPERS = {"astro-island", "astro-slot", "astro-static-slot"}
 # Per difference kind, how many examples to print before summarising the rest.
 SHOWN = 5
 
@@ -72,12 +86,15 @@ class Page(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
+        if ISLANDS and tag in WRAPPERS:
+            return
         self._boundary(tag)
         self.dom.append(("<", tag, tuple(sorted((n, self._plain(tag, a, n, v)) for n, v in attrs))))
         if a.get("id"):
             self.ids.append(a["id"])
         for name in ("href", "src"):
-            if a.get(name) is not None and not (tag == "link" and a.get("rel") in ("canonical", "icon")):
+            started_here = ISLANDS and tag == "script" and not a[name].startswith("/_vercel/") if a.get(name) is not None else False
+            if a.get(name) is not None and not started_here and not (tag == "link" and a.get("rel") in ("canonical", "icon")):
                 url = versionless(a[name]) if (tag, name) in HASHED else a[name]
                 self.links.append(f"{tag} {name} {url}")
         for name, value in attrs:
@@ -101,6 +118,8 @@ class Page(HTMLParser):
             self._skip += 1
 
     def handle_endtag(self, tag):
+        if ISLANDS and tag in WRAPPERS:
+            return
         self._boundary(tag)
         if tag not in VOID:
             self.dom.append((">", tag))
@@ -139,16 +158,35 @@ class Page(HTMLParser):
             return versionless(value)
         return value
 
+    def _without_starters(self):
+        """The page without its <style> elements and the scripts that start the band, search and tour."""
+        out, i = [], 0
+        while i < len(self.dom):
+            token = self.dom[i]
+            if token[0] == "<" and token[1] in ("script", "style"):
+                end = next(n for n in range(i, len(self.dom)) if self.dom[n][:2] == (">", token[1]))
+                attrs = dict(token[2])
+                text = "".join(t[1] for t in self.dom[i + 1:end] if t[0] == "raw").strip()
+                analytics = attrs.get("src", "").startswith("/_vercel/") or text.startswith("window.va ")
+                if token[1] == "script" and (analytics or attrs.get("type") == "application/ld+json"):
+                    out.extend(self.dom[i:end + 1])
+                i = end + 1
+            else:
+                out.append(token)
+                i += 1
+        return out
+
     def markup(self):
         """The page as a list of elements and text, with whitespace that cannot show removed."""
         # A comment between two pieces of text stays, as "split": the browser shapes each
         # piece on its own, so letters either side of it are no longer kerned together.
         # React writes such a comment between two adjacent values. Any other comment goes.
+        dom = self._without_starters() if ISLANDS else self.dom
         merged = []
-        for i, token in enumerate(self.dom):
+        for i, token in enumerate(dom):
             if token[0] == "comment":
                 before = merged[-1][0] if merged else None
-                after = self.dom[i + 1][0] if i + 1 < len(self.dom) else None
+                after = dom[i + 1][0] if i + 1 < len(dom) else None
                 if before == "text" and after == "text":
                     merged.append(("split",))
             else:
@@ -244,8 +282,10 @@ def describe(kind, old, new):
 
 def main():
     args = sys.argv[1:]
+    global ISLANDS
     strict = "--strict" in args
-    args = [a for a in args if a != "--strict"]
+    ISLANDS = "--islands" in args
+    args = [a for a in args if a not in ("--strict", "--islands")]
     only = []
     while "--pages" in args:
         at = args.index("--pages")

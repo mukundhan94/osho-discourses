@@ -1,5 +1,5 @@
 import type { Link, Media, Row as RowData } from "../data/index.ts";
-import { mediaFor } from "../data/index.ts";
+import { mediaFor } from "../data/match.ts";
 import { strip } from "../data/errors.ts";
 import { round } from "../lib/format.ts";
 import { KIND_LABEL, LANG_NAME, talkNumber, unitFor } from "../lib/rows.ts";

@@ -15,21 +15,13 @@ interface Props {
   root: string;
   /** Stylesheets in assets/ to load after site.css. */
   extraCss?: string[];
-  /** The script before the analytics snippet: the home page's own, or the one that centres the year band. */
-  script: "home" | "band";
 }
-const { title, description, ogDescription = description, canonical, ld, root, extraCss = [], script } = Astro.props;
+const { title, description, ogDescription = description, canonical, ld, root, extraCss = [] } = Astro.props;
 
 const ICON =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F3A6B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%23E9A21A'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23C2281D'/%3E%3C/svg%3E";
 
-// Kept word for word from scripts/build.py. BAND centres the current year in the band;
-// ANALYTICS is Vercel's snippet. The home page loads assets/site.js instead of BAND.
-const BAND = `<script>(function () {
-  var here = document.querySelector('.years [aria-current]');
-  if (here) here.parentNode.scrollLeft = here.offsetLeft - (here.parentNode.clientWidth - here.offsetWidth) / 2;
-})();</script>`;
-const HOME = `<script src="assets/site.js?v=${assetVersion("site.js")}" defer></script>`;
+// Vercel's analytics snippet, kept word for word from scripts/build.py.
 const ANALYTICS = `<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
 window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
 <script defer src="/_vercel/insights/script.js"></script>
@@ -62,6 +54,6 @@ window.si = window.si || function () { (window.siq = window.siq || []).push(argu
 </head>
 <body>
 <slot />
-<Fragment set:html={(script === "home" ? HOME : BAND) + "\n" + ANALYTICS} />
+<Fragment set:html={ANALYTICS} />
 </body>
 </html>
