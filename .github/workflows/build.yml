@@ -1,8 +1,7 @@
 name: Build
 
 # Vercel publishes the site from main. This workflow only checks that every
-# push and pull request still builds: the Python build that is published, and
-# the Astro build in web/ that will replace it.
+# push and pull request still passes its tests and builds.
 on:
   push:
     branches: [main]
@@ -14,13 +13,6 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Build
-        run: python3 scripts/build.py
-
-  web:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,10 +28,5 @@ jobs:
         run: npm ci
       - name: Test
         run: npm test
-      - name: Type-check and build
+      - name: Type-check, build and check the site
         run: npm run build
-      - name: Compare the ported pages with the Python build
-        working-directory: .
-        run: |
-          python3 scripts/build.py
-          python3 scripts/parity_check.py --strict --islands

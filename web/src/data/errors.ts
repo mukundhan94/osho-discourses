@@ -1,4 +1,4 @@
-/** A fault in the data files. The message matches the one scripts/build.py stops with. */
+/** A fault in the data files or the finished site. Its message is what the build stops with. */
 export class DataError extends Error {
   override name = "DataError";
 }

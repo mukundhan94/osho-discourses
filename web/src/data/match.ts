@@ -1,6 +1,5 @@
-// Which series a row belongs to, and the id a row carries on the page. Ports of
-// media_for() and row_ids() in scripts/build.py. Nothing here reads a file, so the
-// parts of the site that run in the browser can use it.
+// Which series a row belongs to, and the id a row carries on the page. Nothing here
+// reads a file, so the parts of the site that run in the browser can use it.
 import type { Media, Row } from "./load.ts";
 import { norm } from "./norm.ts";
 

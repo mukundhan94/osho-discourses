@@ -1,5 +1,5 @@
-// What a set of rows adds up to: counts, towns, the summary sentence. Ports of the
-// small helpers in scripts/build.py that the year and series pages share.
+// What a set of rows adds up to: counts, towns, the summary sentence. Small helpers
+// that the year and series pages share.
 import type { Row } from "../data/index.ts";
 import { compare } from "../data/errors.ts";
 

@@ -1,11 +1,11 @@
-// Everything the pages are built from, loaded and checked in the order
-// scripts/build.py's main() does it, so a broken file stops both builds on the same fault.
+// Everything the pages are built from, loaded and checked in one fixed order, so a
+// broken file always stops the build on the same fault.
 import path from "node:path";
 import { DataError, repr } from "./errors.ts";
 import { checkPhoto, loadLinks, loadMedia, loadPlaces, loadRows, loadYears } from "./load.ts";
 import type { Link, Media, Places, Row, Year } from "./load.ts";
 import { norm } from "./norm.ts";
-import { collectSeries, loadSlugs } from "./series.ts";
+import { addSlugs, collectSeries, loadSlugs } from "./series.ts";
 import type { Series } from "./series.ts";
 
 export { DataError } from "./errors.ts";
@@ -29,7 +29,11 @@ export type Site = {
 /** The repository root: the folder that holds data/ and assets/. npm runs every script from web/. */
 export const REPO_ROOT = path.resolve(process.cwd(), "..");
 
-export function loadSite(root: string = REPO_ROOT): Site {
+/**
+ * Load and check everything. With `addSlugs`, a series with no address yet is first
+ * given one in data/slugs.csv; without it, such a series stops the load.
+ */
+export function loadSite(root: string = REPO_ROOT, options: { addSlugs?: boolean } = {}): Site {
   const places = loadPlaces(root);
   const media = loadMedia(root);
   const links = loadLinks(root);
@@ -62,7 +66,12 @@ export function loadSite(root: string = REPO_ROOT): Site {
     }
   }
   const found = collectSeries(years, rowsByYear, media);
-  const slugs = loadSlugs(root, found.map((x) => x.key));
+  const keys = found.map((x) => x.key);
+  if (options.addSlugs) {
+    const added = addSlugs(root, keys);
+    if (added) console.log(`slugs.csv: added ${added} series`);
+  }
+  const slugs = loadSlugs(root, keys);
   const series = found.map((x) => ({ ...x, slug: slugs.get(x.key)! }));
   return {
     years,

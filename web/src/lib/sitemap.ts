@@ -1,5 +1,4 @@
-// robots.txt and sitemap.xml, and the date the sitemap gives every page. Ports of
-// page_lastmod() and sitemap_xml() in scripts/build.py.
+// robots.txt and sitemap.xml, and the date the sitemap gives every page.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";

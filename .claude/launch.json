@@ -6,12 +6,6 @@
       "runtimeExecutable": "make",
       "runtimeArgs": ["serve"],
       "port": 8431
-    },
-    {
-      "name": "osho-discourses-new-build",
-      "runtimeExecutable": "make",
-      "runtimeArgs": ["serve-web"],
-      "port": 8433
     }
   ]
 }
