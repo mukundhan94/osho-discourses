@@ -5,6 +5,12 @@
   "buildCommand": "node -v && npm --prefix web run build",
   "outputDirectory": "web/dist",
   "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/_astro/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ],
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/year/:id/index.html", "destination": "/year/:id/", "permanent": true },

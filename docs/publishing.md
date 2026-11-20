@@ -141,6 +141,8 @@ The check compares everything from `<body` to `</body>` byte for byte and fails 
 
 Every page loads React and a small year band component, about 70 KB compressed. The home page also loads the series search and the reading tour. They are written by the build into `/_astro/`, with a hash of their content in each file name.
 
+Because a changed file gets a new name, `vercel.json` tells browsers to keep everything under `/_astro/` for a year without asking again (`Cache-Control: public, max-age=31536000, immutable`). Do not put a file there by hand, or under a name without a hash: a browser that has it would not fetch a newer one. Every other file keeps Vercel's default, which is to check on each visit; the stylesheets and pictures under `/assets/` rely on that, with a `?v=` hash in the links to them.
+
 Without script the pages still read in full: the band is a row of links, the tour shows all four cards, and the search box stays hidden.
 
 ## Analytics
