@@ -1,6 +1,8 @@
 # Publishing
 
-The site is a folder of static files. `make build` writes it to `_site/`, which is not committed.
+The site is a folder of static files. `make web` writes it to `web/dist/`, which is not committed.
+
+Two builds exist while the move from Python to React finishes. The Astro build in `web/` is the one that is published. `scripts/build.py` (`make build`, into `_site/`) is kept beside it until it is removed, and CI compares the two on every pull request.
 
 ## Where it is served
 
@@ -12,9 +14,21 @@ The site is a folder of static files. `make build` writes it to `_site/`, which 
 
 The stylesheet and script links carry a short content hash (`site.css?v=...`), so a change is never hidden by a cached copy.
 
-`vercel.json` tells Vercel to run `python3 scripts/build.py` and serve `_site`.
+`vercel.json` tells Vercel what to run and what to serve:
 
-The canonical address is set in `scripts/build.py` as `SITE`.
+| Setting | Value |
+|---|---|
+| Install | `npm --prefix web ci` |
+| Build | `node -v && npm --prefix web run build` |
+| Served folder | `web/dist` |
+
+The build type-checks, writes the site, then runs the checks in [checks.md](checks.md) on it. A fault stops the build.
+
+Vercel builds on Node 24.x. That is set in the Vercel project (Settings, Build and Deployment, Node.js Version), not in this repo: `.nvmrc` pins the same version for CI and for work on your own machine. `node -v` prints the version at the top of each build log, so a mismatch can be seen.
+
+The canonical address is `SITE` in `web/src/lib/site.ts`.
+
+To go back to an earlier state of the site, revert the commit on `main` with a pull request. Vercel's dashboard can also roll back one deployment, but after that it stops publishing new pushes until a deployment is promoted by hand.
 
 ## Pull requests
 
@@ -22,25 +36,27 @@ The GitHub workflow (`.github/workflows/build.yml`) builds every push and pull r
 
 ## Files for search engines
 
-`make build` writes two files beside the page:
+The build writes two files beside the pages:
 
 - `robots.txt` allows every crawler and points to `sitemap.xml`.
-- `sitemap.xml` lists every page: the home page, one page per year and one per series (575 in all). The addresses are built from `SITE` in `scripts/build.py`.
+- `sitemap.xml` lists every page: the home page, one page per year and one per series (575 in all). The addresses are built from `SITE` in `web/src/lib/site.ts`.
 
 Each sitemap entry carries a last-modified date. The build prints where the date came from:
 
 | Situation | Date used |
 |---|---|
-| Full git history | The last commit that touched `data/`, `assets/` or `scripts/build.py`, the three things the page is built from |
-| Shallow clone whose history stops before that commit | The oldest commit it has. The page changed on or before that date |
+| The commit is in the history that was cloned | The last commit that touched `data/`, `assets/` or `web/src/`, the three things the pages are built from |
+| Shallow clone whose history stops before that commit | The oldest commit it has. The pages changed on or before that date |
 | No git | The build date |
+
+Vercel clones only the last ten commits, so on Vercel the second row applies whenever that commit is more than ten commits back.
 
 ## Year pages
 
 Each year also has a page of its own, so a search can land on that year instead of the whole chronology.
 
 - **Address:** `/year/<id>/`, where `<id>` is the year's `id` in `data/years.json`. The first is `/year/before-1964/`. There are 28.
-- **Content:** the same section the home page shows for that year, made by the same `year_html()` call, so the two cannot drift apart. Only the picture addresses differ.
+- **Content:** the same section the home page shows for that year, made by the same `YearSection` component, so the two cannot drift apart. Only the picture addresses differ.
 - **Around it:** a smaller masthead that links home, the year band with this year marked, and links to the earlier and later year.
 - **Head:** its own title (`Osho discourses in 1975: A discourse every morning`), a description cut from the year's lede at 155 characters, itself as canonical, and a `CollectionPage` JSON-LD block that points to the site.
 - **Styles:** the home page's `assets/site.css`, plus `assets/pages.css` for the masthead and the earlier and later links. The home page does not load `pages.css`.
@@ -77,7 +93,7 @@ Each titled series has a page too, so a search for one series can land on it.
 
 Chat apps and social sites show a picture beside a link to the site. The page names it in its `og:image` tag.
 
-- The picture in use is set by `OG_IMAGE` in `scripts/build.py`. Today it is `assets/og/medallion.png`.
+- The picture in use is set by `OG_IMAGE` in `web/src/lib/site.ts`. Today it is `assets/og/medallion.png`.
 - `assets/og/` holds three designs: `masthead.png`, `arch.png` and `medallion.png`. To switch, change `OG_IMAGE`.
 - All three are drawn by `scripts/og.html`, which is not part of the site. They use the site's fonts and colours and no photograph.
 - The build fails unless the picture is a whole, undamaged PNG, 1200 by 630 pixels and under 300 KB.
@@ -91,7 +107,7 @@ To redraw one after editing `scripts/og.html`, render it with headless Chrome. R
 
 ## Structured data
 
-The page's `<head>` carries one JSON-LD block that tells search engines what the site is. `json_ld()` in `scripts/build.py` writes it.
+The home page's `<head>` carries one JSON-LD block that tells search engines what the site is. `homeLd()` in `web/src/lib/site.ts` writes it.
 
 | Item | What it says |
 |---|---|
@@ -100,7 +116,6 @@ The page's `<head>` carries one JSON-LD block that tells search engines what the
 
 - The years come from the first and last entries in `data/years.json`, so they follow the data.
 - The creator is the site itself, an `Organization` named `oshodiscourses.com`. No person is named.
-- The build serialises the block and parses it back, and fails if the two differ.
 
 The build can only show that the block is valid JSON.
 
@@ -111,14 +126,22 @@ Google's Dataset guide says to validate with the Rich Results Test, run on the l
 Some changes must leave the home page exactly as visitors see it. Save a copy before the change, then compare after:
 
 ```bash
-make build && cp _site/index.html /tmp/index.baseline.html
+make web && cp web/dist/index.html /tmp/index.baseline.html
 ```
 
 ```bash
-make bodycheck BASELINE=/tmp/index.baseline.html
+make web && scripts/body_check.sh /tmp/index.baseline.html web/dist/index.html
 ```
 
-The check compares everything from `<body` to `</body>` byte for byte and fails on any difference.
+The check compares everything from `<body` to `</body>` byte for byte and fails on any difference. Build in the same folder both times: each part that runs in the browser carries an id that depends on where the site was built.
+
+`make bodycheck BASELINE=<file>` runs the same check on `_site/index.html`, the Python build's home page.
+
+## Scripts
+
+Every page loads React and a small year band component, about 70 KB compressed. The home page also loads the series search and the reading tour. They are written by the build into `/_astro/`, with a hash of their content in each file name.
+
+Without script the pages still read in full: the band is a row of links, the tour shows all four cards, and the search box stays hidden.
 
 ## Analytics
 

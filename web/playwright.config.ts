@@ -5,6 +5,10 @@ import path from "node:path";
 // (to take the reference pictures), then to the new build (to compare).
 const dir = path.resolve(process.env.PARITY_DIR ?? "../_site");
 const port = 8432;
+// Or a site that is already being served, such as https://oshodiscourses.com: set
+// PARITY_URL and nothing is started here. It takes the place of PARITY_DIR. An empty
+// PARITY_URL counts as not set, so `PARITY_URL= npm run ...` always means a local folder.
+const url = process.env.PARITY_URL?.replace(/\/$/, "") || undefined;
 
 export default defineConfig({
   testDir: "tests",
@@ -15,12 +19,12 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"], ["json", { outputFile: ".shots-results/report.json" }]],
   use: {
-    baseURL: `http://127.0.0.1:${port}`,
+    baseURL: url ?? `http://127.0.0.1:${port}`,
     deviceScaleFactor: 1,
     colorScheme: "light",
     reducedMotion: "reduce",
   },
-  webServer: {
+  webServer: url ? undefined : {
     // The folder is the server's working directory, so its path never passes through a shell.
     command: `python3 -m http.server ${port} --bind 127.0.0.1`,
     cwd: dir,
