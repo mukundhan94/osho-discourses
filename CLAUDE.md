@@ -16,7 +16,7 @@ This is a non-commercial reference library: it collects what was spoken, when an
 | `make slugs` | Give new series an address in `data/slugs.csv` |
 | `make clean` | Remove `web/dist/` |
 
-Node is pinned to 24 in `.nvmrc`. Run `nvm use` before `make build`, `make serve`, `make test` or `make slugs`: an older Node stops Astro. `make check` and `make media` are Python 3, standard library only, and need no Node.
+Node is pinned to 24 in `.nvmrc`. Run `nvm use` before `make build`, `make serve`, `make test` or `make slugs`: an older Node stops Astro. `make check` and `make media` are Python 3, standard library only, and need no Node. `make serve` needs both: Node to build, and Python 3 for the small server.
 
 To run one test file: `cd web && node --test src/lib/format.test.ts`. `npm --prefix web run check` type-checks without building.
 

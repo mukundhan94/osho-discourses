@@ -18,7 +18,9 @@ This is a non-commercial reference library: it collects what was spoken, when an
 
 ## Run it yourself
 
-You need `make`, Node 24 (`nvm use` reads `.nvmrc`) and, once, `npm --prefix web install`. The two data tools, `make check` and `make media`, need only Python 3.
+You need `make`, Node 24 (`nvm use` reads `.nvmrc`), Python 3 and, once, `npm --prefix web install`.
+
+Node builds the site. Python 3 serves it for `make serve`, and runs the two data tools, `make check` and `make media`, which need nothing else.
 
 | Command | What it does |
 |---|---|

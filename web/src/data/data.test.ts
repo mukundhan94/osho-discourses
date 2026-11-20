@@ -8,6 +8,8 @@ import { after, test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parseCsv } from "./csv.ts";
 import { DataError, loadSite } from "./index.ts";
+import { checkPhoto, loadMedia, loadPlaces, loadRows, loadYears } from "./load.ts";
+import { addSlugs, collectSeries } from "./series.ts";
 import { norm } from "./norm.ts";
 
 const REPO = fileURLToPath(new URL("../../../", import.meta.url));
@@ -63,6 +65,15 @@ function fault(root: string): string | undefined {
   }
 }
 
+/** The key of every series in a folder's data, found the way the build finds them, before slugs.csv is read. */
+function loadKeys(root: string): string[] {
+  const places = loadPlaces(root);
+  const years = loadYears(root);
+  years.forEach((y) => checkPhoto(root, y));
+  const rowsByYear = new Map(years.map((y) => [y.id, loadRows(root, y.id, places)]));
+  return collectSeries(years, rowsByYear, loadMedia(root)).map((x) => x.key);
+}
+
 test("the real data loads, with the totals the site states", () => {
   const site = loadSite(REPO);
   assert.equal(site.years.length, 28);
@@ -92,6 +103,60 @@ test("stops on a year with no heading", () => {
 test("stops on a media.csv count that is not a whole number", () => {
   const root = copyWith([{ file: "media.csv", find: ",29,1,0,,", replace: ",29,1.5,0,," }], 201);
   assert.equal(fault(root), "media.csv:3: video must be a whole number or empty, not '1.5'");
+});
+
+// `make slugs` writes data/slugs.csv, the one data file the code writes. An address is
+// permanent once published, so these pin what the writer may and may not do.
+const ROSE = "a rose is a rose is a rose,a-rose-is-a-rose-is-a-rose\n";
+const slugsFile = (root: string) => path.join(root, "data", "slugs.csv");
+
+test("make slugs adds a missing series and leaves every other row as it was", () => {
+  const root = copyWith(
+    [
+      { file: "slugs.csv", find: ROSE, replace: "" },
+      { file: "slugs.csv", find: "a new vision of women s liberation,a-new-vision-of-women-s-liberation", replace: "a new vision of women s liberation,an-address-chosen-by-hand" },
+    ],
+    300,
+  );
+  const before = fs.readFileSync(slugsFile(root), "utf8").split("\n");
+  assert.equal(addSlugs(root, loadKeys(root)), 1);
+  const after = fs.readFileSync(slugsFile(root), "utf8").split("\n");
+  assert.ok(after.includes(ROSE.trim()), "the missing series has its address");
+  assert.ok(after.includes("a new vision of women s liberation,an-address-chosen-by-hand"), "a hand-chosen address is kept");
+  assert.deepEqual(after.filter((line) => line !== ROSE.trim()), before, "no other row moved or changed");
+  assert.equal(fault(root), undefined);
+});
+
+test("make slugs changes nothing when every series has an address", () => {
+  const root = copyWith([], 301);
+  const written = fs.statSync(slugsFile(root)).mtimeMs;
+  assert.equal(addSlugs(root, loadKeys(root)), 0);
+  assert.equal(fs.statSync(slugsFile(root)).mtimeMs, written);
+  assert.equal(fs.existsSync(slugsFile(root) + ".new"), false);
+});
+
+test("make slugs refuses an address that is already taken, and leaves the file alone", () => {
+  const root = copyWith(
+    [
+      { file: "slugs.csv", find: ROSE, replace: "" },
+      { file: "slugs.csv", find: "a new vision of women s liberation,a-new-vision-of-women-s-liberation", replace: "a new vision of women s liberation,a-rose-is-a-rose-is-a-rose" },
+    ],
+    302,
+  );
+  const before = fs.readFileSync(slugsFile(root), "utf8");
+  assert.throws(() => addSlugs(root, loadKeys(root)), {
+    name: "DataError",
+    message: "slugs.csv: 'a rose is a rose is a rose' would repeat or empty the slug 'a-rose-is-a-rose-is-a-rose'; add its row by hand",
+  });
+  assert.equal(fs.readFileSync(slugsFile(root), "utf8"), before);
+  assert.equal(fs.existsSync(slugsFile(root) + ".new"), false);
+});
+
+test("make slugs stops on a row whose series is gone, without writing", () => {
+  const root = copyWith([{ file: "slugs.csv", find: ROSE, replace: "" }, { file: "slugs.csv", append: "not a series,not-a-series" }], 303);
+  const before = fs.readFileSync(slugsFile(root), "utf8");
+  assert.throws(() => addSlugs(root, loadKeys(root)), { name: "DataError", message: /^slugs\.csv: 'not a series' is no longer a series\./ });
+  assert.equal(fs.readFileSync(slugsFile(root), "utf8"), before);
 });
 
 test("the CSV reader handles quotes, doubled quotes and blank lines", () => {
