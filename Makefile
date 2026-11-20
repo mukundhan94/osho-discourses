@@ -31,10 +31,10 @@ web: ## Type-check and build the new (Astro) site into web/dist/
 serve-web: web ## Build the new site, then serve it at http://localhost:8433
 	python3 -m http.server 8433 --bind 127.0.0.1 --directory web/dist
 
-parity: build ## Compare _site/ with web/dist/: pages, head tags, links, labels and text
+parity: build web ## Compare _site/ with web/dist/: pages, head tags, links, labels and text
 	python3 scripts/parity_check.py --islands
 
-shots: build ## Photograph and drive _site/, then compare web/dist/ with the record
+shots: build web ## Photograph and drive _site/, then compare web/dist/ with the record
 	PARITY_URL= PARITY_DIR=../_site npm --prefix web run shots:reference
 	PARITY_URL= PARITY_DIR=dist npm --prefix web run shots:compare
 
