@@ -1,5 +1,4 @@
-// The list of series pages. Ports of collect_series() and the reading half of
-// load_slugs() in scripts/build.py.
+// The list of series pages, and their addresses in data/slugs.csv.
 import fs from "node:fs";
 import path from "node:path";
 import { readTable, records } from "./csv.ts";
@@ -72,11 +71,8 @@ export function collectSeries(years: Year[], rowsByYear: Map<string, Row[]>, med
   });
 }
 
-/**
- * The address of each series page, from data/slugs.csv. A published address never
- * moves, so this only reads: `make slugs` is what adds a row for a new series.
- */
-export function loadSlugs(root: string, keys: string[]): Map<string, string> {
+/** The rows of data/slugs.csv, each checked: a well-formed slug, and no key or slug used twice. */
+function readSlugs(root: string): Map<string, string> {
   const file = path.join(root, "data", "slugs.csv");
   const table = fs.existsSync(file) ? readTable(file) : { header: ["key", "slug"], rows: [] };
   if (table.header?.length !== 2 || table.header[0] !== "key" || table.header[1] !== "slug") {
@@ -95,6 +91,11 @@ export function loadSlugs(root: string, keys: string[]): Map<string, string> {
     slugs.set(key, slug);
     used.add(slug);
   });
+  return slugs;
+}
+
+/** A row whose series no longer exists stops the build: its page is public and needs a redirect first. */
+function checkNoneGone(slugs: Map<string, string>, keys: string[]): void {
   const wanted = new Set(keys);
   const gone = [...slugs.keys()].filter((k) => !wanted.has(k)).sort(compare);
   if (gone.length) {
@@ -103,6 +104,15 @@ export function loadSlugs(root: string, keys: string[]): Map<string, string> {
         `for /series/${slugs.get(gone[0]!)}/ in vercel.json, then remove its row.`,
     );
   }
+}
+
+/**
+ * The address of each series page, from data/slugs.csv. A published address never
+ * moves, so this only reads: `make slugs` is what adds a row for a new series.
+ */
+export function loadSlugs(root: string, keys: string[]): Map<string, string> {
+  const slugs = readSlugs(root);
+  checkNoneGone(slugs, keys);
   const missing = keys.filter((k) => !slugs.has(k)).sort(compare);
   if (missing.length) {
     throw new DataError(
@@ -110,4 +120,31 @@ export function loadSlugs(root: string, keys: string[]): Map<string, string> {
     );
   }
   return slugs;
+}
+
+/**
+ * Give every series that has no address yet a row in data/slugs.csv, and return how
+ * many were added. The slug is the key with each run of other characters turned into
+ * a hyphen. Existing rows are never changed.
+ */
+export function addSlugs(root: string, keys: string[]): number {
+  const slugs = readSlugs(root);
+  checkNoneGone(slugs, keys);
+  const missing = keys.filter((k) => !slugs.has(k)).sort(compare);
+  if (!missing.length) return 0;
+  const used = new Set(slugs.values());
+  for (const key of missing) {
+    const slug = key.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    if (!slug || used.has(slug)) {
+      throw new DataError(`slugs.csv: ${repr(key)} would repeat or empty the slug ${repr(slug)}; add its row by hand`);
+    }
+    slugs.set(key, slug);
+    used.add(slug);
+  }
+  // Write beside the file and swap it in, so an interrupted run cannot leave half a list.
+  const file = path.join(root, "data", "slugs.csv");
+  const lines = [...slugs].sort(([a], [b]) => compare(a, b)).map(([key, slug]) => `${key},${slug}\n`);
+  fs.writeFileSync(file + ".new", "key,slug\n" + lines.join(""));
+  fs.renameSync(file + ".new", file);
+  return missing.length;
 }

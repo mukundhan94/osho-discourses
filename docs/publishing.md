@@ -1,8 +1,6 @@
 # Publishing
 
-The site is a folder of static files. `make web` writes it to `web/dist/`, which is not committed.
-
-Two builds exist while the move from Python to React finishes. The Astro build in `web/` is the one that is published. `scripts/build.py` (`make build`, into `_site/`) is kept beside it until it is removed, and CI compares the two on every pull request.
+The site is a folder of static files. `make build` writes it to `web/dist/`, which is not committed. The build is Astro with React, in `web/`.
 
 ## Where it is served
 
@@ -12,7 +10,7 @@ Two builds exist while the move from Python to React finishes. The Astro build i
 
 `www.oshodiscourses.com` redirects to the address above (a permanent redirect set on the domain in Vercel). GitHub Pages is turned off.
 
-The stylesheet and script links carry a short content hash (`site.css?v=...`), so a change is never hidden by a cached copy.
+The stylesheet links carry a short content hash (`site.css?v=...`), so a change is never hidden by a cached copy.
 
 `vercel.json` tells Vercel what to run and what to serve:
 
@@ -32,7 +30,7 @@ To go back to an earlier state of the site, revert the commit on `main` with a p
 
 ## Pull requests
 
-The GitHub workflow (`.github/workflows/build.yml`) builds every push and pull request without deploying it. A failed build means a data file broke one of the rules in [checks.md](checks.md).
+The GitHub workflow (`.github/workflows/build.yml`) runs the tests and builds every push and pull request without deploying it. A failed build usually means a data file broke one of the rules in [checks.md](checks.md).
 
 ## Files for search engines
 
@@ -120,22 +118,6 @@ The home page's `<head>` carries one JSON-LD block that tells search engines wha
 The build can only show that the block is valid JSON.
 
 Google's Dataset guide says to validate with the Rich Results Test, run on the live address. That test covers the `Dataset` item. It has nothing to report for `WebSite`, and a pass does not mean Google will use the markup.
-
-## Checking that the home page did not change
-
-Some changes must leave the home page exactly as visitors see it. Save a copy before the change, then compare after:
-
-```bash
-make web && cp web/dist/index.html /tmp/index.baseline.html
-```
-
-```bash
-make web && scripts/body_check.sh /tmp/index.baseline.html web/dist/index.html
-```
-
-The check compares everything from `<body` to `</body>` byte for byte and fails on any difference. Build in the same folder both times: each part that runs in the browser carries an id that depends on where the site was built.
-
-`make bodycheck BASELINE=<file>` runs the same check on `_site/index.html`, the Python build's home page.
 
 ## Scripts
 

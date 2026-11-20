@@ -1,5 +1,4 @@
-// Checks on the finished site, run after every page is written. Ports of check_pages()
-// and check_og_image() in scripts/build.py, with the same messages.
+// Checks on the finished site, run after every page is written. A fault stops the build.
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";

@@ -9,71 +9,68 @@ This is a non-commercial reference library: it collects what was spoken, when an
 | Command | What it does |
 |---|---|
 | `make serve` | Build and serve at http://localhost:8431 |
-| `make build` | Build into `_site/` |
+| `make build` | Type-check, build into `web/dist/`, then check the finished site |
+| `make test` | Run the unit tests |
 | `make check` | Compare `data/talks/` with the raw wiki year pages |
 | `make media` | Regenerate `data/media.csv` (slow: it fetches about 900 pages) |
 | `make slugs` | Give new series an address in `data/slugs.csv` |
-| `make bodycheck BASELINE=<file>` | Build, then compare the home page `<body>` with a saved copy of `index.html` |
-| `make web` | Type-check and build the new (Astro) site into `web/dist/` |
-| `make serve-web` | Build the new site and serve it at http://localhost:8433 |
-| `make parity` | Compare `_site/` with `web/dist/`: pages, head tags, links, labels and text |
-| `make shots` | Photograph and drive `_site/`, then compare `web/dist/` with the pictures and the behaviour record (Playwright) |
-| `make clean` | Remove `_site/` |
+| `make clean` | Remove `web/dist/` |
 
-The site build is Python 3 standard library only. Do not add dependencies to it.
+Node is pinned to 24 in `.nvmrc`. Run `nvm use` before `make build`, `make serve`, `make test` or `make slugs`: an older Node stops Astro. `make check` and `make media` are Python 3, standard library only, and need no Node.
 
-`web/` holds the build that is published: Astro 7 with React 19, TypeScript in strict mode, managed with npm. It builds the whole site into `web/dist/`: all 575 pages, `robots.txt`, `sitemap.xml` and a copy of `assets/`. After writing them it runs the page checks and the share image check, and stops on a fault. `scripts/build.py` (`make build`, into `_site/`) is the build it replaced. It is no longer published, and is kept only until it is removed, with CI comparing the two.
+To run one test file: `cd web && node --test src/lib/format.test.ts`. `npm --prefix web run check` type-checks without building.
 
-Node is pinned to 24 in `.nvmrc`; run `nvm use` before any `npm` or `make web`, `make shots` command. Packages in `web/package.json` are pinned to exact versions. `npm --prefix web run check` type-checks without building.
-
-`web/src/data/` is the TypeScript port of how `build.py` loads and checks `data/`: `loadSite()` in `index.ts` returns the years, rows, places, media, links and series. It must load the same values as `build.py` and stop on the same faults with the same message. `npm --prefix web test` proves that against `scripts/data_dump.py`, on the real data and on the broken copies listed in `web/tests/fixtures/data-cases.json`. A change to a loading rule or a check in `build.py` needs the same change there, and a case in that file.
-
-Pages in `web/` are ported, not redesigned: same elements, same class names, same text, so `assets/site.css` applies unchanged. `web/src/pages/` and `web/src/layouts/` are Astro (the document, the head, the page's outline); the rest is React in `web/src/components/`; logic with no markup is in `web/src/lib/`.
-
-Most components are rendered to HTML at build time and send no script. Three also run in the browser, in `web/src/components/islands/`: `YearBand` on every page, and `Find` (the series search) and `Tour` on the home page. They replace `assets/site.js`, which only `build.py` still loads. A part runs in the browser only where a page file gives it `client:load`, and whatever it is given there is written into the page as data, so give it little. Code those three import must not read files: `data/match.ts`, `data/norm.ts` and `data/errors.ts` are safe, `data/index.ts` is not. Two rules that are easy to break:
-
-- **One string per run of text.** In JSX, write `{`All in ${town}`}`, never `All in {town}`. React puts an empty comment between a value and the text beside it, the browser then shapes the two pieces apart, and the pixels move.
-- **Format numbers with `lib/format.ts`.** Python rounds an exact half to the even digit; `toFixed()` and `Math.round()` do not.
-
-To compare the ported pages with the Python build, run `make build` and `make web`, then `python3 scripts/parity_check.py --strict --islands` (`make parity` is the same without `--strict`). CI does the same. `--islands` leaves out how the three browser parts are started, which the two builds do differently. `make shots` compares the pictures and what the tour, the search and the band do when driven. One difference is accepted and named in `web/tests/screenshots.spec.ts`: on the phone-width home page the year band's text is drawn one pixel higher.
-
-The two builds date the sitemap differently. `build.py` uses the last commit touching `data`, `assets` or `scripts/build.py`; the new build uses `data`, `assets` or `web/src`.
-
-The site build has no test suite and no linter. `make build` is the test: it validates the data and the built pages and stops on the first fault. [docs/checks.md](docs/checks.md) lists every fault it catches.
+There is no linter. `make build` is the main check: it stops on the first fault in the data or in the finished pages. [docs/checks.md](docs/checks.md) lists every fault it catches.
 
 ## How the build works
 
-`scripts/build.py` is the whole site generator: one file, run top to bottom by `main()`.
+The site is built by Astro 7 with React 19, in TypeScript (strict), from the folder `web/`. Packages in `web/package.json` are pinned to exact versions.
 
-1. **Load and validate.** `data/years.json` gives the 28 year sections in order. Each has a CSV in `data/talks/` with one row per series or talk. `data/places.csv` gives map coordinates, `data/media.csv` the per-series wiki page and recording counts, `data/links.csv` hand-added links.
-2. **Match rows to series.** `media_for()` matches a row's title to a key in `media.csv`. That one match decides a row's Listen, Video and Wiki links and which series page it belongs to. A row with no match is an untitled talk and has no series page.
-3. **Render three kinds of page** from the same pieces:
-   - the home page (`page()`), all 28 year sections on one page;
-   - a year page per year (`year_page()`), at `/year/<id>/`;
-   - a series page per titled series (`series_page()`), at `/series/<slug>/`.
-4. **Check and write.** `check_pages()` requires a unique title, description and canonical on every page, and every internal link to lead to a file. Then `robots.txt` and `sitemap.xml` are written.
+1. **Load and check.** `loadSite()` in `web/src/data/index.ts` reads `data/years.json` (the 28 year sections, in order), one CSV per year in `data/talks/`, `data/places.csv` (map coordinates), `data/media.csv` (each series' wiki page and recording counts) and `data/links.csv` (hand-added links). It checks them in a fixed order and stops with a `DataError` on the first fault.
+2. **Match rows to series.** `mediaFor()` in `web/src/data/match.ts` matches a row's title to a key in `media.csv`. That one match decides a row's Listen, Video and Wiki links and which series page it belongs to. A row with no match is an untitled talk and has no series page.
+3. **Write three kinds of page**, from `web/src/pages/`:
+   - `index.astro`, the home page, with all 28 year sections;
+   - `year/[id].astro`, one page per year, at `/year/<id>/`;
+   - `series/[slug].astro`, one page per titled series, at `/series/<slug>/`.
 
-Things that span several functions:
+   `robots.txt.ts` and `sitemap.xml.ts` beside them write those two files.
+4. **Finish and check.** A hook in `web/astro.config.ts` copies `assets/` into `web/dist/assets/`, then runs `web/src/lib/checks.ts`: every page has its own title, description and canonical address, every link inside the site leads to a file, and the shared picture is a sound PNG of the declared size.
 
-- **One section, two pages.** `year_html()` makes a year's section for both the home page and the year page, so they cannot drift. `row_html()` makes a row for all three page kinds.
-- **Shared page furniture.** `head_html()`, `year_band()`, `sprite_html()` and `footer_html()` are used by every page. Pages in folders pass `root="/"` so their asset addresses are absolute.
+Where the code lives:
+
+| Folder | What it holds |
+|---|---|
+| `web/src/data/` | Reading and checking the data files |
+| `web/src/lib/` | Logic with no markup: map projection and label placement, row summaries, number formatting, the sitemap, the finished-site checks |
+| `web/src/components/` | React components, rendered to HTML at build time and sent with no script |
+| `web/src/components/islands/` | The three components that also run in the browser |
+| `web/src/layouts/`, `web/src/pages/` | Astro: the document and head, and each page's outline |
+
+Things that span several files:
+
+- **One section, two pages.** `YearSection` makes a year's section for both the home page and the year page, so they cannot drift. `Row` makes a row for all three page kinds.
 - **Addresses are data.** A year's address is its `id` in `years.json`. A series address is its `slug` in `data/slugs.csv`. The build never invents a slug: a series with no row stops the build, and `make slugs` adds it.
-- **Styles and script.** `assets/site.css` styles every page. `assets/pages.css` is loaded only by year and series pages. `assets/site.js` (year band tracking, series search, reading tour) is loaded only by the home page. Stylesheet and script links carry a content hash, so editing either changes the page's HTML.
-- **Sitemap dates** come from the last git commit touching `PAGE_SOURCES` (`data`, `assets`, `scripts/build.py`).
+- **Styles are not part of the build.** `assets/site.css` styles every page and `assets/pages.css` is loaded only by year and series pages. The components write the class names those files expect. Stylesheet links carry a `?v=` hash of the file.
+- **Three parts run in the browser:** `YearBand` on every page, and `Find` (the series search) and `Tour` on the home page. A part runs in the browser only where a page file gives it `client:load`. Whatever it is given there is written into the page as data, so give it little. Code those three import must not read files: `data/match.ts`, `data/norm.ts` and `data/errors.ts` are safe, `data/index.ts` is not.
+- **Sitemap dates** come from the last git commit touching `data`, `assets` or `web/src` (`PAGE_SOURCES` in `web/src/lib/sitemap.ts`).
 
-`scripts/wiki_check.py` and `scripts/media_links.py` are data tools, not part of the build. `scripts/data_dump.py` prints what `build.py` loads, for the test in `web/`. `scripts/og.html` is the source of the social preview images in `assets/og/`.
+`scripts/wiki_check.py` and `scripts/media_links.py` are data tools in Python, not part of the build. `norm()` in `wiki_check.py` and `web/src/data/norm.ts` must agree: the Python one writes the keys in `media.csv`, the TypeScript one matches titles to them. `scripts/og.html` is the source of the social preview images in `assets/og/`.
+
+### Three rules that are easy to break
+
+- **One string per run of text.** In JSX, write `` {`All in ${town}`} ``, never `All in {town}`. React puts an empty comment between a value and the text beside it. The browser then shapes the two pieces apart, kerning across the join is lost, and text moves by a fraction of a pixel.
+- **Format numbers with `lib/format.ts`.** The site was first built by a Python script, and every published coordinate keeps the digits it printed. Python rounds an exact half to the even digit; `toFixed()` and `Math.round()` do not.
+- **Keep the fault messages stable.** `web/tests/fixtures/data-cases.json` pins the exact message for each broken data file. A reworded message needs its case updated in the same change.
 
 ## Publishing
 
-Vercel builds and deploys every push to `main` (`vercel.json`): it runs `npm --prefix web run build` and serves `web/dist/`. The Python build is no longer published; it is kept, and compared with the new one in CI, until it is removed. The GitHub workflow only checks that both builds pass: job `build` for Python, job `web` for Astro.
+Vercel builds and deploys every push to `main` (`vercel.json`): it runs `npm --prefix web ci`, then `npm --prefix web run build`, and serves `web/dist/`. So a merge to `main` is a deploy. The GitHub workflow only checks that the tests and the build pass.
 
 Vercel's Node version (24.x) is a setting in the Vercel project, not a file here. Do not rely on `.nvmrc` or `engines` for it.
 
-A merge to `main` is a deploy.
+`.claude/settings.json` allows the build, test and check commands without a prompt, and asks before any `vercel` or `npx vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts the preview with `make serve`.
 
-`.claude/settings.json` allows the build and check commands without a prompt, and asks before any `vercel` or `npx vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts a preview of either build: `make serve` for the Python one, `make serve-web` for the published one.
-
-Work on a branch and open a pull request. `vercel.json` also holds the redirects that keep each page at one address; a new kind of page in its own folder needs its own rule there.
+Work on a branch and open a pull request. `vercel.json` also holds the redirects that keep each page at one address; a new kind of page in its own folder needs its own rule there. It marks everything under `/_astro/` as cacheable for a year, which is safe only because those file names carry a hash of their content.
 
 ## Where to look
 
@@ -97,11 +94,11 @@ Work on a branch and open a pull request. `vercel.json` also holds the redirects
 - **Photographs:** freely licensed only, credited in `assets/img/CREDITS.md`. None of Osho, and none whose subject is an identifiable private person.
 - **No em-dashes** in any text. The build rejects them in the data files.
 - **Addresses are permanent.** Never change a `slug` in `data/slugs.csv` or a year's `id`; see [docs/publishing.md](docs/publishing.md).
-- **`_site/` is build output.** Never commit it.
+- **`web/dist/` is build output.** Never commit it.
 
 ## After a change
 
-1. `make build` must pass.
+1. `make build` and `make test` must pass.
 2. Run `make check` after touching a title or a talk count. Three count differences are expected; see [docs/checks.md](docs/checks.md).
-3. For anything visible, look at the page at desktop and phone width.
-4. To prove a change left the published home page alone, save `web/dist/index.html` first, run `make web` after the change, then `scripts/body_check.sh <that copy> web/dist/index.html`. `make bodycheck` does the same for the Python build's `_site/index.html`.
+3. For anything visible, look at the page at desktop and phone width with `make serve`. Nothing compares pictures automatically, so a visual change is caught only by looking.
+4. For anything in `web/src/components/islands/`, try it in a browser: the search, the tour, and the year band following the page. No test drives them.

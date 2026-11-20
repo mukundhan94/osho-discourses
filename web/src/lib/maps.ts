@@ -1,6 +1,6 @@
 // The small map beside a year: which window it shows, where each town falls, and
-// which towns get a label. Ports of the map functions in scripts/build.py; every
-// number is formatted as Python formats it.
+// which towns get a label. Every number is formatted with lib/format.ts, so the
+// published coordinates do not move.
 import fs from "node:fs";
 import path from "node:path";
 import type { Places, Row } from "../data/index.ts";

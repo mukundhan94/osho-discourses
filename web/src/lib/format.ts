@@ -1,4 +1,5 @@
-// Numbers written the way Python's format() writes them. scripts/build.py prints map
+// Numbers written the way Python's format() writes them. The site was first built by a
+// Python script, and every published coordinate keeps the digits it printed: map
 // coordinates with ":.1f" and outline points with ":g", and the pages must match digit
 // for digit. Python rounds an exact tie to the even digit; JavaScript's toFixed() and
 // Math.round() round it up.

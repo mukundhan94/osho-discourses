@@ -1,16 +1,12 @@
-// Proves the TypeScript loader against scripts/build.py's loader:
-//   - on the real data, both load the same values;
-//   - on each broken copy of the data, both stop with the same message.
-// The Python side is scripts/data_dump.py. Run with `npm test` in web/.
+// Tests of the loader: the real data loads, each broken copy of the data stops it with
+// the fault it should, and each odd but valid copy still loads. Run with `npm test` in web/.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { after, test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parseCsv } from "./csv.ts";
-import { dump } from "./dump.ts";
 import { DataError, loadSite } from "./index.ts";
 import { norm } from "./norm.ts";
 
@@ -23,7 +19,7 @@ type Edit =
   | { file: string; crlf: true }
   | { file: string; chomp: true };
 type Cases = {
-  broken: { name: string; edits: Edit[]; expect: string }[];
+  broken: { name: string; edits: Edit[]; message: string }[];
   valid: { name: string; edits: Edit[] }[];
 };
 const cases: Cases = JSON.parse(fs.readFileSync(path.join(REPO, "web/tests/fixtures/data-cases.json"), "utf8"));
@@ -56,68 +52,49 @@ function copyWith(edits: Edit[], n: number): string {
   return root;
 }
 
-/** What build.py's loader makes of a folder: the data it loaded, or the message it stopped with. */
-function python(root: string): { data?: unknown; fault?: string } {
-  const run = spawnSync("python3", [path.join(REPO, "scripts/data_dump.py"), root], {
-    encoding: "utf8",
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  if (run.error) throw run.error;
-  return run.status === 0 ? { data: JSON.parse(run.stdout) } : { fault: run.stderr.trim() };
-}
-
-/** The same for the TypeScript loader. Only a DataError counts as a fault; anything else is a bug here. */
-function typescript(root: string): { data?: unknown; fault?: string } {
+/** The message the loader stops with on a folder, or undefined when it loads. Anything but a DataError is a bug here. */
+function fault(root: string): string | undefined {
   try {
-    return { data: JSON.parse(JSON.stringify(dump(loadSite(root)))) };
+    loadSite(root);
+    return undefined;
   } catch (error) {
-    if (error instanceof DataError) return { fault: error.message };
+    if (error instanceof DataError) return error.message;
     throw error;
   }
 }
 
-test("the real data loads to the same values as build.py", () => {
-  const py = python(REPO);
-  assert.equal(py.fault, undefined);
-  const ts = typescript(REPO);
-  assert.equal(ts.fault, undefined);
-  assert.deepStrictEqual(ts.data, py.data);
+test("the real data loads, with the totals the site states", () => {
   const site = loadSite(REPO);
   assert.equal(site.years.length, 28);
-  assert.ok(site.series.length > 500);
+  assert.equal(site.series.length, 546);
+  assert.deepEqual(site.grand, { rows: 839, towns: 125 });
+  // Every series has an address, and no two share one.
+  assert.equal(new Set(site.series.map((x) => x.slug)).size, site.series.length);
 });
 
 cases.valid.forEach((c, i) => {
-  test(`loads the same with ${c.name}`, () => {
-    const root = copyWith(c.edits, i);
-    const py = python(root);
-    assert.equal(py.fault, undefined);
-    assert.deepStrictEqual(typescript(root).data, py.data);
+  test(`loads with ${c.name}`, () => {
+    assert.equal(fault(copyWith(c.edits, i)), undefined);
   });
 });
 
 cases.broken.forEach((c, i) => {
   test(`stops on ${c.name}`, () => {
-    const root = copyWith(c.edits, 100 + i);
-    const py = python(root);
-    assert.ok(py.fault?.includes(c.expect), `build.py said: ${py.fault ?? "nothing, it loaded"}`);
-    assert.equal(typescript(root).fault, py.fault);
+    assert.equal(fault(copyWith(c.edits, 100 + i)), c.message);
   });
 });
 
-// Faults build.py has no message for: it stops on a Python traceback, or only when a
-// page happens to use the value. The TypeScript loader names them.
 test("stops on a year with no heading", () => {
   const root = copyWith([{ file: "years.json", find: '"heading": "The first camp at Ranakpur",', replace: "" }], 200);
-  assert.equal(typescript(root).fault, "years.json: 1964: heading is required");
+  assert.equal(fault(root), "years.json: 1964: heading is required");
 });
 
 test("stops on a media.csv count that is not a whole number", () => {
   const root = copyWith([{ file: "media.csv", find: ",29,1,0,,", replace: ",29,1.5,0,," }], 201);
-  assert.equal(typescript(root).fault, "media.csv:3: video must be a whole number or empty, not '1.5'");
+  assert.equal(fault(root), "media.csv:3: video must be a whole number or empty, not '1.5'");
 });
 
-test("the CSV reader treats quotes as Python's csv module does", () => {
+test("the CSV reader handles quotes, doubled quotes and blank lines", () => {
   assert.deepStrictEqual(parseCsv('a,"b,c","d ""e"""\n'), [["a", "b,c", 'd "e"']]);
   assert.deepStrictEqual(parseCsv('x,5" tall,\n\n,\n'), [["x", '5" tall', ""], ["", ""]]);
   assert.deepStrictEqual(parseCsv('"a"b,c'), [["ab", "c"]]);

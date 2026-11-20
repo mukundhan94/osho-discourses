@@ -1,7 +1,7 @@
-// Reads CSV the way Python's csv module does with its default settings, which is
-// what scripts/build.py uses: commas, double quotes, a doubled quote for a literal
-// quote, and blank lines skipped. A quote inside an unquoted field is an ordinary
-// character.
+// Reads CSV the way Python's csv module does with its default settings: commas,
+// double quotes, a doubled quote for a literal quote, and blank lines skipped. A quote
+// inside an unquoted field is an ordinary character. The Python data tools in scripts/
+// write these files, so this reads them the same way.
 import fs from "node:fs";
 
 export function parseCsv(text: string): string[][] {
