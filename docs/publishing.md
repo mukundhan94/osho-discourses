@@ -126,14 +126,16 @@ Google's Dataset guide says to validate with the Rich Results Test, run on the l
 Some changes must leave the home page exactly as visitors see it. Save a copy before the change, then compare after:
 
 ```bash
-make build && cp _site/index.html /tmp/index.baseline.html
+make web && cp web/dist/index.html /tmp/index.baseline.html
 ```
 
 ```bash
-make bodycheck BASELINE=/tmp/index.baseline.html
+make web && scripts/body_check.sh /tmp/index.baseline.html web/dist/index.html
 ```
 
-The check compares everything from `<body` to `</body>` byte for byte and fails on any difference.
+The check compares everything from `<body` to `</body>` byte for byte and fails on any difference. Build in the same folder both times: each part that runs in the browser carries an id that depends on where the site was built.
+
+`make bodycheck BASELINE=<file>` runs the same check on `_site/index.html`, the Python build's home page.
 
 ## Scripts
 

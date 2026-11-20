@@ -35,8 +35,8 @@ parity: build ## Compare _site/ with web/dist/: pages, head tags, links, labels 
 	python3 scripts/parity_check.py --islands
 
 shots: build ## Photograph and drive _site/, then compare web/dist/ with the record
-	PARITY_DIR=../_site npm --prefix web run shots:reference
-	PARITY_DIR=dist npm --prefix web run shots:compare
+	PARITY_URL= PARITY_DIR=../_site npm --prefix web run shots:reference
+	PARITY_URL= PARITY_DIR=dist npm --prefix web run shots:compare
 
 clean: ## Remove the built site
 	rm -rf _site

@@ -22,7 +22,7 @@ This is a non-commercial reference library: it collects what was spoken, when an
 
 The site build is Python 3 standard library only. Do not add dependencies to it.
 
-`web/` holds the move of the build to React (Astro 7, React 19, TypeScript in strict mode), managed with npm. Nothing in `web/` is deployed yet: it builds the whole site: all 575 pages, `robots.txt`, `sitemap.xml` and a copy of `assets/`, the same set of files as `_site/`. After writing them it runs the page checks and the share image check that `make build` runs, and stops on a fault. `make build` and `scripts/build.py` remain the site until the switch.
+`web/` holds the build that is published: Astro 7 with React 19, TypeScript in strict mode, managed with npm. It builds the whole site into `web/dist/`: all 575 pages, `robots.txt`, `sitemap.xml` and a copy of `assets/`. After writing them it runs the page checks and the share image check, and stops on a fault. `scripts/build.py` (`make build`, into `_site/`) is the build it replaced. It is no longer published, and is kept only until it is removed, with CI comparing the two.
 
 Node is pinned to 24 in `.nvmrc`; run `nvm use` before any `npm` or `make web`, `make shots` command. Packages in `web/package.json` are pinned to exact versions. `npm --prefix web run check` type-checks without building.
 
@@ -67,7 +67,9 @@ Things that span several functions:
 
 Vercel builds and deploys every push to `main` (`vercel.json`): it runs `npm --prefix web run build` and serves `web/dist/`. The Python build is no longer published; it is kept, and compared with the new one in CI, until it is removed. The GitHub workflow only checks that both builds pass: job `build` for Python, job `web` for Astro.
 
-Vercel's Node version (24.x) is a setting in the Vercel project, not a file here. Do not rely on `.nvmrc` or `engines` for it. So a merge to `main` is a deploy.
+Vercel's Node version (24.x) is a setting in the Vercel project, not a file here. Do not rely on `.nvmrc` or `engines` for it.
+
+A merge to `main` is a deploy.
 
 `.claude/settings.json` allows the build and check commands without a prompt, and asks before any `vercel` or `npx vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts a preview of either build: `make serve` for the Python one, `make serve-web` for the published one.
 
@@ -102,4 +104,4 @@ Work on a branch and open a pull request. `vercel.json` also holds the redirects
 1. `make build` must pass.
 2. Run `make check` after touching a title or a talk count. Three count differences are expected; see [docs/checks.md](docs/checks.md).
 3. For anything visible, look at the page at desktop and phone width.
-4. To prove a change left the home page alone, save `_site/index.html` first and run `make bodycheck BASELINE=<that copy>` afterwards.
+4. To prove a change left the published home page alone, save `web/dist/index.html` first, run `make web` after the change, then `scripts/body_check.sh <that copy> web/dist/index.html`. `make bodycheck` does the same for the Python build's `_site/index.html`.

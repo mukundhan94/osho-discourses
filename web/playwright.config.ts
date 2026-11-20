@@ -6,8 +6,9 @@ import path from "node:path";
 const dir = path.resolve(process.env.PARITY_DIR ?? "../_site");
 const port = 8432;
 // Or a site that is already being served, such as https://oshodiscourses.com: set
-// PARITY_URL and nothing is started here. It takes the place of PARITY_DIR.
-const url = process.env.PARITY_URL?.replace(/\/$/, "");
+// PARITY_URL and nothing is started here. It takes the place of PARITY_DIR. An empty
+// PARITY_URL counts as not set, so `PARITY_URL= npm run ...` always means a local folder.
+const url = process.env.PARITY_URL?.replace(/\/$/, "") || undefined;
 
 export default defineConfig({
   testDir: "tests",
