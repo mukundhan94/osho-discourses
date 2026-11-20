@@ -15,6 +15,7 @@ This is a non-commercial reference library: it collects what was spoken, when an
 | `make slugs` | Give new series an address in `data/slugs.csv` |
 | `make bodycheck BASELINE=<file>` | Build, then compare the home page `<body>` with a saved copy of `index.html` |
 | `make web` | Type-check and build the new (Astro) site into `web/dist/` |
+| `make serve-web` | Build the new site and serve it at http://localhost:8433 |
 | `make parity` | Compare `_site/` with `web/dist/`: pages, head tags, links, labels and text |
 | `make shots` | Photograph and drive `_site/`, then compare `web/dist/` with the pictures and the behaviour record (Playwright) |
 | `make clean` | Remove `_site/` |
@@ -64,9 +65,11 @@ Things that span several functions:
 
 ## Publishing
 
-Vercel builds and deploys every push to `main` (`vercel.json`), from the Python build only. The GitHub workflow only checks that both builds pass: job `build` for Python, job `web` for Astro. So a merge to `main` is a deploy.
+Vercel builds and deploys every push to `main` (`vercel.json`): it runs `npm --prefix web run build` and serves `web/dist/`. The Python build is no longer published; it is kept, and compared with the new one in CI, until it is removed. The GitHub workflow only checks that both builds pass: job `build` for Python, job `web` for Astro.
 
-`.claude/settings.json` allows the build and check commands without a prompt, and asks before any `vercel` or `npx vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts the preview with `make serve`.
+Vercel's Node version (24.x) is a setting in the Vercel project, not a file here. Do not rely on `.nvmrc` or `engines` for it. So a merge to `main` is a deploy.
+
+`.claude/settings.json` allows the build and check commands without a prompt, and asks before any `vercel` or `npx vercel` command, `git push`, and creating, editing or merging a pull request. `.claude/launch.json` starts a preview of either build: `make serve` for the Python one, `make serve-web` for the published one.
 
 Work on a branch and open a pull request. `vercel.json` also holds the redirects that keep each page at one address; a new kind of page in its own folder needs its own rule there.
 

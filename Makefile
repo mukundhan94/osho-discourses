@@ -1,11 +1,11 @@
 .DEFAULT_GOAL := help
-.PHONY: help build serve check media slugs bodycheck web parity shots clean
+.PHONY: help build serve check media slugs bodycheck web serve-web parity shots clean
 # Take BASELINE as typed: make would otherwise expand $(...) in it as make syntax.
 override BASELINE := $(value BASELINE)
 export BASELINE
 
 help: ## Show these targets
-	@grep -E '^[a-z]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-6s %s\n", $$1, $$2}'
+	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  make %-9s %s\n", $$1, $$2}'
 
 build: ## Build the site into _site/
 	python3 scripts/build.py
@@ -27,6 +27,9 @@ bodycheck: build ## Compare the home page body with BASELINE=<saved copy of inde
 
 web: ## Type-check and build the new (Astro) site into web/dist/
 	npm --prefix web run build
+
+serve-web: web ## Build the new site, then serve it at http://localhost:8433
+	python3 -m http.server 8433 --bind 127.0.0.1 --directory web/dist
 
 parity: build ## Compare _site/ with web/dist/: pages, head tags, links, labels and text
 	python3 scripts/parity_check.py --islands
