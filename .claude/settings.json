@@ -3,12 +3,13 @@
     "allow": [
       "Bash(make build)",
       "Bash(make serve)",
+      "Bash(make test)",
       "Bash(make check)",
       "Bash(make slugs)",
-      "Bash(make bodycheck:*)",
       "Bash(make clean)",
-      "Bash(python3 scripts/build.py)",
-      "Bash(python3 scripts/build.py --slugs)"
+      "Bash(npm --prefix web test)",
+      "Bash(npm --prefix web run build)",
+      "Bash(npm --prefix web run check)"
     ],
     "ask": [
       "Bash(vercel:*)",

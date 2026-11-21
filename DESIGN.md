@@ -121,7 +121,7 @@ components:
 
 # Design System: Osho: the discourses, 1954 to 1990
 
-This file describes the page as built. The source of truth is `assets/site.css` (tokens are custom properties on `:root`), `assets/site.js` and the markup written by `scripts/build.py`. If this file and the stylesheet disagree, the stylesheet is right and this file needs correcting.
+This file describes the page as built. The source of truth is `assets/site.css` (tokens are custom properties on `:root`) and the markup written by the components in `web/src/components/`. If this file and the stylesheet disagree, the stylesheet is right and this file needs correcting.
 
 ## Overview
 

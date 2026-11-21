@@ -1,6 +1,5 @@
 // The words on a series page that are worked out from its rows: its title, its
-// opening sentence, and the date its structured data gives. Ports of series_lede(),
-// series_when() and series_start() in scripts/build.py.
+// opening sentence, and the date its structured data gives.
 import type { Row, Series } from "../data/index.ts";
 import { strip } from "../data/errors.ts";
 import { KIND_LABEL, totals, townWeights } from "./rows.ts";

@@ -17,73 +17,45 @@ Some differences are expected and stay listed:
 - The wiki types some newspaper reports (Samachar Vibhag) as discourses.
 - Three counts differ by one, for reasons given in the note on that row.
 
-## `make bodycheck`
-
-Compares the home page's `<body>` with a saved baseline, byte for byte. See [publishing.md](publishing.md). It covers the home page only, and only the body: changes inside `<head>` pass.
-
-## `make parity` and `make shots`
-
-These two exist while the build moves from Python to React. They compare the Python build in `_site/` with the new build in `web/dist/`, which must give readers and search engines the same site.
-
-`make parity` runs `scripts/parity_check.py` (Python, no dependencies). It compares:
-
-- the set of pages, `robots.txt`, and the addresses in `sitemap.xml`;
-- on every page: the title, every named meta tag (description, robots, social tags and the rest), canonical, JSON-LD, ids, links in page order, visible text, and the attributes that carry words or meaning (every `aria-` attribute, alt text, roles, a label's `for`, a link's `rel` and `target`).
-
-It ignores what a reader cannot perceive: markup structure, class names, runs of whitespace, and the cache marker on stylesheet and script links.
-
-Two options narrow or tighten it, for use while pages are being ported:
-
-- `--pages 'year/*'` compares only the pages whose path matches. It may be given more than once. `robots.txt` and `sitemap.xml` are then left out.
-- `--strict` also compares the markup: the same elements in the same order, with the same attributes and text, after collapsing whitespace. It covers what the other checks do not, such as the coordinates in a map. A comment that splits a run of text counts as a difference, because the browser stops kerning across it.
-
-- `--islands` leaves out how the year band, the search and the tour are started. `build.py` loads `assets/site.js` and a short inline script; the new build starts three React parts, each inside an `<astro-island>` element with scripts of its own. With this option those wrapper elements, every `<style>` element and every script other than the analytics snippet and the structured data are left out on both sides. What is inside a wrapper is still compared.
-
-CI runs `python3 scripts/parity_check.py --strict --islands` on every pull request, over the whole site. `make parity` passes `--islands` too.
-
-It does not check behaviour. Whether the search, the reading tour and the year band still work is checked when those parts are ported.
-
-`make shots` runs a Playwright test in `web/`. It photographs the Python build, then photographs the new build and compares each picture pixel by pixel, at 1440px and 390px wide:
-
-| Target | Pictures per width |
-|---|---|
-| Home page: masthead, year band, reading tour, footer | 4 |
-| Home page: each year section | 28 |
-| Year pages, whole page | 28 |
-| Series pages, whole page (20 chosen to cover every kind) | 20 |
-
-No pixel may differ, with one named exception. On the home page at 390px, the year band's text is drawn one pixel higher in the new build: 1,107 pixels in the band's picture, and the 196 pixels of its border in the top row of the picture below. The layout is the same in both builds; the limits are in `web/tests/screenshots.spec.ts`. Fifteen runs of the Python build against itself differed by zero pixels (2026-11-17).
-
-`make shots` also runs `web/tests/behaviour.spec.ts`. It drives the reading tour, the series search and the year band on the home page, and the year band on three year pages and two series pages, and writes down what each did. The record from the new build must equal the record from the Python build.
-
-Both commands need Node 24 (`nvm use` reads `.nvmrc`), and `web/dist/` built by `make web`. Every page is ported, so both commands run whole.
-
-Before the first `make shots`, run `npm --prefix web install` and `npx --prefix web playwright install chromium` once. To compare a folder other than `web/dist/`, run `python3 scripts/parity_check.py OLD NEW`, or set `PARITY_DIR` for `npm --prefix web run shots:compare`.
-
-## `npm --prefix web test`
-
-Runs while both builds exist. `web/src/data/` loads `data/` for the new build, and must agree with `scripts/build.py`:
-
-- on the real data, both load the same values: every year, row, town list, row id, matched series, and every series with its name, kind, years and address;
-- on each broken copy of the data in `web/tests/fixtures/data-cases.json`, both stop with the same message.
-
-The Python side is `scripts/data_dump.py`. The broken copies cover the faults below that come from the data files.
-
-The same command tests the checks `make web` runs on the finished site (`web/src/lib/checks.ts`): unique titles, descriptions and canonical addresses, links that lead to a file, and the shared picture. Each is run beside `build.py`'s own check on the same broken folder or picture, and must stop with the same message.
-
-`make web` is stricter than `make build` in two places, where `build.py` stops on a Python traceback instead of a message: a year with no `heading` or `lede`, and a `talks`, `video` or `minutes` value in `data/media.csv` that is not a whole number.
-
 ## `make build`
 
-`make build` fails on any of these:
+`make build` type-checks the code, builds the site, then checks what it built. It stops on the first fault and says which file and line.
 
-- a wrong header, or an unknown `kind` or `lang`
+In the data files:
+
+- a wrong header, a row with the wrong number of fields, or an unknown `kind` or `lang`
+- an `unsure` value that is not empty or `y`
+- an em-dash in a row
 - a town missing from `data/places.csv`
+- a year with no rows, or with no `heading` or `lede`
 - a photograph that is missing from `assets/img/` or not listed in `assets/img/CREDITS.md`
-- a shared picture (`OG_IMAGE` in `scripts/build.py`) that is not a PNG, is cut short or damaged, is not 1200 by 630 pixels, or is over 300 KB
 - an `id` used twice in `data/years.json`, or years that are not in date order
+- a first or last entry in `data/years.json` whose `numeral` is not a four-digit year, or a first year later than the last
+- a `talks`, `video` or `minutes` value in `data/media.csv` that is not a whole number
 - a series with no row in `data/slugs.csv`, a row there whose series is gone, or a slug that is repeated or not lower-case letters and digits joined by hyphens
-- two pages with the same title, description or canonical address, or a page missing one of them
-- a link or picture address inside the site that leads to no file in `_site/`
-- structured data that does not parse back to what was written, or a first or last entry in `data/years.json` whose `numeral` is not a four-digit year, or a first year later than the last
 - a row in `data/links.csv` with a missing title or label, an unknown `kind`, an address that does not start with `https://`, or a title that matches no series
+
+In the finished site:
+
+- two pages with the same title, description or canonical address, or a page missing one of them
+- a link or picture address inside the site that leads to no file
+- a shared picture (`OG_IMAGE` in `web/src/lib/site.ts`) that is not a PNG, is cut short or damaged, is not 1200 by 630 pixels, or is over 300 KB
+
+## `make test`
+
+Runs the unit tests in `web/src/`, with Node's own test runner.
+
+| Tests | What they cover |
+|---|---|
+| `data/data.test.ts` | The real data loads, with the totals the site states. Each broken copy of the data in `web/tests/fixtures/data-cases.json` stops the loader with exactly the message written there. Each odd but valid copy still loads |
+| `lib/checks.test.ts` | The finished-site checks, on small broken folders and damaged pictures; the sitemap text; the sitemap date with full history, in a shallow clone and with no git |
+| `lib/format.test.ts` | Numbers formatted as Python formats them, including exact halves |
+| `lib/series.test.ts`, `lib/site.test.ts` | A series' start date, the description clipping, the check on the first and last years |
+
+## What nothing checks
+
+- **How the pages look.** No test compares pictures. Look at the page with `make serve`, at desktop and phone width.
+- **The parts that run in the browser.** No test drives the series search, the reading tour or the year band. Try them by hand after changing anything in `web/src/components/islands/`.
+- **Structured data beyond being valid JSON.** Google's Rich Results Test, run on the live address, is the check for that.
+
+The site was moved from a Python build to this one in November 2026. During the move every page was compared element by element with the old build, and pictures and behaviour were compared too. Those comparison tools were removed with the old build.

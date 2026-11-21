@@ -1,5 +1,5 @@
 {
-  "about": "Edits to a copy of data/, used by web/src/data/data.test.ts. Each 'broken' case must stop scripts/build.py's loader and the TypeScript loader with the same message, which must contain 'expect'. Each 'valid' case must load to the same values in both.",
+  "about": "Edits to a copy of data/, used by web/src/data/data.test.ts. Each 'broken' case must stop the loader with exactly 'message'. Each 'valid' case must load. The messages were first taken from scripts/build.py, the Python build this one replaced, and matched it on every case.",
   "broken": [
     {
       "name": "a talks file with a wrong header",
@@ -10,7 +10,7 @@
           "replace": "date,dates,title"
         }
       ],
-      "expect": "1964.csv: header must be"
+      "message": "1964.csv: header must be sort,dates,title,place,towns,talks,kind,unsure,note,lang"
     },
     {
       "name": "an unknown kind",
@@ -21,7 +21,7 @@
           "replace": ",2,lecture,,Private talks"
         }
       ],
-      "expect": "1964.csv:2: kind must be one of"
+      "message": "1964.csv:2: kind must be one of ['camp', 'darshan', 'interview', 'series', 'untitled']"
     },
     {
       "name": "an unknown lang",
@@ -32,7 +32,7 @@
           "replace": "Private talks,fr"
         }
       ],
-      "expect": "1964.csv:2: lang must be"
+      "message": "1964.csv:2: lang must be hi, en or empty"
     },
     {
       "name": "unsure that is not empty or y",
@@ -43,7 +43,7 @@
           "replace": ",2,series,yes,Private"
         }
       ],
-      "expect": "1964.csv:2: unsure must be"
+      "message": "1964.csv:2: unsure must be empty or y"
     },
     {
       "name": "an em-dash in a row",
@@ -54,7 +54,7 @@
           "replace": "Private — talks"
         }
       ],
-      "expect": "1964.csv:2: em-dash found"
+      "message": "1964.csv:2: em-dash found"
     },
     {
       "name": "a row one field short",
@@ -65,7 +65,7 @@
           "replace": "Upasana Ke Kshan,Bombay"
         }
       ],
-      "expect": "1964.csv:2: wrong number of fields"
+      "message": "1964.csv:2: wrong number of fields"
     },
     {
       "name": "a row one field long",
@@ -76,7 +76,7 @@
           "replace": "Private talks,hi,extra"
         }
       ],
-      "expect": "1964.csv:2: wrong number of fields"
+      "message": "1964.csv:2: wrong number of fields"
     },
     {
       "name": "a town missing from places.csv",
@@ -87,7 +87,7 @@
           "replace": "Kshan,Bombay,Atlantis,2"
         }
       ],
-      "expect": "1964.csv:2: town 'Atlantis' is not in places.csv"
+      "message": "1964.csv:2: town 'Atlantis' is not in places.csv"
     },
     {
       "name": "a blank line, then a fault on the next row",
@@ -103,7 +103,7 @@
           "replace": "\"Sion, Bombay\",Bombay,1,lecture"
         }
       ],
-      "expect": "1964.csv:3: kind must be one of"
+      "message": "1964.csv:3: kind must be one of ['camp', 'darshan', 'interview', 'series', 'untitled']"
     },
     {
       "name": "a photograph that is not in assets/img/",
@@ -114,7 +114,7 @@
           "replace": "\"file\": \"missing.webp\""
         }
       ],
-      "expect": "photo missing.webp is not in assets/img/"
+      "message": "before-1964: photo missing.webp is not in assets/img/"
     },
     {
       "name": "a photograph that is not credited",
@@ -125,7 +125,7 @@
           "replace": "\"file\": \"CREDITS.md\""
         }
       ],
-      "expect": "is not listed in assets/img/CREDITS.md"
+      "message": "before-1964: photo CREDITS.md is not listed in assets/img/CREDITS.md"
     },
     {
       "name": "a year id used twice",
@@ -136,7 +136,7 @@
           "replace": "\"id\": \"1964\""
         }
       ],
-      "expect": "years.json: the id '1964' is used more than once"
+      "message": "years.json: the id '1964' is used more than once"
     },
     {
       "name": "years out of date order",
@@ -147,7 +147,7 @@
           "replace": "\"id\": \"1964\", \"numeral\": \"1999\","
         }
       ],
-      "expect": "years.json: the years must be in date order"
+      "message": "years.json: the years must be in date order, each numeral later than the one before"
     },
     {
       "name": "a year with no rows",
@@ -157,7 +157,7 @@
           "keepLines": 1
         }
       ],
-      "expect": "1990: no rows"
+      "message": "1990: no rows"
     },
     {
       "name": "a series with no row in slugs.csv",
@@ -168,7 +168,7 @@
           "replace": ""
         }
       ],
-      "expect": "1 series have no address yet, the first is 'a rose is a rose is a rose'"
+      "message": "slugs.csv: 1 series have no address yet, the first is 'a rose is a rose is a rose'. Run `make slugs`."
     },
     {
       "name": "a slugs.csv row whose series is gone",
@@ -178,7 +178,7 @@
           "append": "not a series,not-a-series"
         }
       ],
-      "expect": "'not a series' is no longer a series"
+      "message": "slugs.csv: 'not a series' is no longer a series. Its page is public, so add a redirect for /series/not-a-series/ in vercel.json, then remove its row."
     },
     {
       "name": "a slug used twice",
@@ -188,7 +188,7 @@
           "append": "zzz other,a-rose-is-a-rose-is-a-rose"
         }
       ],
-      "expect": "key or slug is used more than once"
+      "message": "slugs.csv:548: key or slug is used more than once"
     },
     {
       "name": "a slug that is not lower-case and hyphens",
@@ -199,7 +199,7 @@
           "replace": ",A_Rose"
         }
       ],
-      "expect": "slugs.csv:3: slug must be lower-case"
+      "message": "slugs.csv:3: slug must be lower-case letters and digits joined by hyphens"
     },
     {
       "name": "slugs.csv with a wrong header",
@@ -210,7 +210,7 @@
           "replace": "key,address"
         }
       ],
-      "expect": "slugs.csv: header must be key,slug"
+      "message": "slugs.csv: header must be key,slug"
     },
     {
       "name": "links.csv with a wrong header",
@@ -221,7 +221,7 @@
           "replace": "title,kind,text,url"
         }
       ],
-      "expect": "links.csv: header must be"
+      "message": "links.csv: header must be title,kind,label,url"
     },
     {
       "name": "a link with no label",
@@ -231,7 +231,7 @@
           "append": "Sadhana Path,listen,,https://example.org/a"
         }
       ],
-      "expect": "links.csv:2: title and label are required"
+      "message": "links.csv:2: title and label are required"
     },
     {
       "name": "a link of an unknown kind",
@@ -241,7 +241,7 @@
           "append": "Sadhana Path,buy,Shop,https://example.org/a"
         }
       ],
-      "expect": "links.csv:2: kind must be one of"
+      "message": "links.csv:2: kind must be one of ['listen', 'read', 'watch']"
     },
     {
       "name": "a link that is not https",
@@ -251,7 +251,7 @@
           "append": "Sadhana Path,listen,Listen,http://example.org/a"
         }
       ],
-      "expect": "links.csv:2: url must start with https://"
+      "message": "links.csv:2: url must start with https://"
     },
     {
       "name": "a link whose title matches no series",
@@ -261,7 +261,7 @@
           "append": "No Such Series,listen,Listen,https://example.org/a"
         }
       ],
-      "expect": "links.csv: no series is titled 'No Such Series'"
+      "message": "links.csv: no series is titled 'No Such Series'"
     },
     {
       "name": "an unknown town with a no-break space in it",
@@ -272,7 +272,7 @@
           "replace": "Kshan,Bombay,New Delhi,2"
         }
       ],
-      "expect": "town 'New\\xa0Delhi' is not in places.csv"
+      "message": "1964.csv:2: town 'New\\xa0Delhi' is not in places.csv"
     },
     {
       "name": "an unknown town with a zero-width space in it",
@@ -283,7 +283,7 @@
           "replace": "Kshan,Bombay,Bom​bay,2"
         }
       ],
-      "expect": "town 'Bom\\u200bbay' is not in places.csv"
+      "message": "1964.csv:2: town 'Bom\\u200bbay' is not in places.csv"
     }
   ],
   "valid": [

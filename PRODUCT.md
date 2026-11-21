@@ -6,7 +6,7 @@ Osho discourse chronology: a static reference site listing Osho's talks in date 
 web
 
 ## Stack
-Static site. A Python standard-library script (scripts/build.py) builds one HTML page from CSV and JSON data into _site/. One stylesheet, one small script, self-hosted fonts and images, no external requests. GitHub Actions builds and deploys to GitHub Pages.
+Static site. Astro with React, in TypeScript (web/), builds 575 HTML pages from CSV and JSON data into web/dist/: a home page, one page per year and one per series. Two stylesheets, self-hosted fonts and images. Three small parts run in the browser as React: the year band, the series search and the reading tour. Vercel builds and publishes every push to main.
 
 ## Users
 Friends of the author who already know Osho and his talks (confirmed by the author, 2026-11-16). They know the names of the well-known series and want to place them in time and place. Not newcomers: no need to explain who Osho was.

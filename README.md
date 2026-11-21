@@ -18,12 +18,15 @@ This is a non-commercial reference library: it collects what was spoken, when an
 
 ## Run it yourself
 
-You need Python 3 and `make`. Nothing else.
+You need `make`, Node 24 (`nvm use` reads `.nvmrc`), Python 3 and, once, `npm --prefix web install`.
+
+Node builds the site. Python 3 serves it for `make serve`, and runs the two data tools, `make check` and `make media`, which need nothing else.
 
 | Command | What it does |
 |---|---|
 | `make serve` | Builds the site and serves it at http://localhost:8431 |
-| `make build` | Builds the site into `_site/` |
+| `make build` | Builds the site into `web/dist/` and checks it |
+| `make test` | Runs the unit tests |
 | `make check` | Compares the data with the wiki and lists differences |
 | `make media` | Refreshes the listen and watch links in `data/media.csv` |
 
@@ -40,8 +43,9 @@ The column guide and how to add a year are in [docs/data.md](docs/data.md). Addi
 | Path | What it holds |
 |---|---|
 | `data/` | The talks, places, year summaries and outside links |
-| `assets/` | Stylesheet, script, fonts and photographs |
-| `scripts/` | The site builder, the wiki check and the link finder |
+| `assets/` | Stylesheets, fonts and photographs |
+| `web/` | The site builder: Astro with React, in TypeScript |
+| `scripts/` | The wiki check and the link finder, in Python |
 | `docs/` | Guides to the data, the links, the checks and publishing |
 | `CLAUDE.md` | A short brief for AI coding agents |
 | `DESIGN.md` | Colours, type and components, for anyone restyling the page |
